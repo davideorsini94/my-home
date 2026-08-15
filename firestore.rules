@@ -1,0 +1,188 @@
+rules_version = '2';
+
+// Rubbish Manager — security rules.
+//
+// Model: every house document carries its own `members` map, so membership on
+// the house itself is checked from `resource.data` at zero read cost, and
+// membership on a subcollection costs exactly one get() of the parent.
+//
+// Sharing works entirely on the free Spark plan: a joining user proves they
+// hold a live invite code by writing it into `joinProof`, and these rules
+// verify server-side that the code exists, names this house and has not
+// expired. Knowing a bare houseId is therefore not enough to join.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function houseData(houseId) {
+      return get(/databases/$(database)/documents/houses/$(houseId)).data;
+    }
+
+    function isHouseMember(houseId) {
+      return signedIn() && request.auth.uid in houseData(houseId).members;
+    }
+
+    function validWasteType(t) {
+      return t in ['indifferenziato', 'carta', 'plastica', 'umido', 'verde', 'vetro'];
+    }
+
+    function validDateKey(s) {
+      return s is string && s.size() == 10 && s.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    // A profile is readable only by its owner. Member names shown elsewhere in
+    // the app come from the denormalised `memberNames` map on the house.
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    match /houses/{houseId} {
+
+      // ---- helpers -------------------------------------------------------
+
+      function memberDiff() {
+        return request.resource.data.members.diff(resource.data.members);
+      }
+
+      // Any member may edit ordinary fields, but never the membership itself.
+      function editsOrdinaryFields() {
+        return signedIn()
+          && request.auth.uid in resource.data.members
+          && !request.resource.data.diff(resource.data).affectedKeys()
+               .hasAny(['members', 'memberUids', 'ownerUid'].toSet());
+      }
+
+      // Join: the caller adds nobody but themselves, as a plain member, and
+      // proves possession of a live invite code for this house.
+      function selfJoinsWithInvite() {
+        return signedIn()
+          && !(request.auth.uid in resource.data.members)
+          && !(request.auth.uid in resource.data.memberUids)
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['members', 'memberUids', 'memberNames', 'joinProof'].toSet())
+          && memberDiff().addedKeys() == [request.auth.uid].toSet()
+          && memberDiff().removedKeys().size() == 0
+          && memberDiff().changedKeys().size() == 0
+          && request.resource.data.members[request.auth.uid] == 'member'
+          && request.resource.data.memberUids.hasAll(resource.data.memberUids)
+          && request.auth.uid in request.resource.data.memberUids
+          && request.resource.data.memberUids.size() == resource.data.memberUids.size() + 1
+          && request.resource.data.memberUids.size() <= 10
+          && inviteIsValid(request.resource.data.joinProof);
+      }
+
+      function inviteIsValid(code) {
+        return code is string
+          && exists(/databases/$(database)/documents/invites/$(code))
+          && get(/databases/$(database)/documents/invites/$(code)).data.houseId == houseId
+          && get(/databases/$(database)/documents/invites/$(code)).data.expiresAt > request.time;
+      }
+
+      // Removal: exactly one member goes, never the owner, and the caller is
+      // either the owner or the person leaving.
+      //
+      // The removed uid is compared as a set rather than indexed out, because
+      // removedKeys() returns a Set and rules cannot index one.
+      function removesOneMember() {
+        return signedIn()
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['members', 'memberUids', 'memberNames'].toSet())
+          && memberDiff().removedKeys().size() == 1
+          && memberDiff().addedKeys().size() == 0
+          && memberDiff().changedKeys().size() == 0
+          && !(resource.data.ownerUid in memberDiff().removedKeys())
+          && (request.auth.uid == resource.data.ownerUid
+              || memberDiff().removedKeys() == [request.auth.uid].toSet())
+          && request.resource.data.memberUids.size() == resource.data.memberUids.size() - 1
+          && resource.data.memberUids.hasAll(request.resource.data.memberUids)
+          && request.resource.data.memberUids.hasAll(request.resource.data.members.keys());
+      }
+
+      // ---- house document ------------------------------------------------
+
+      allow get: if signedIn() && request.auth.uid in resource.data.members;
+
+      // Safe because a list query is evaluated per document: it can only
+      // succeed if every returned house already contains the caller, which in
+      // practice forces the client's array-contains(uid) filter.
+      allow list: if signedIn() && request.auth.uid in resource.data.memberUids;
+
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.members.keys().hasOnly([request.auth.uid])
+        && request.resource.data.members[request.auth.uid] == 'owner'
+        && request.resource.data.memberUids == [request.auth.uid]
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 1
+        && request.resource.data.name.size() <= 40;
+
+      allow update: if editsOrdinaryFields()
+        || selfJoinsWithInvite()
+        || removesOneMember();
+
+      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+
+      // ---- waste configuration -------------------------------------------
+
+      match /wasteConfigs/{wasteTypeId} {
+        allow read: if isHouseMember(houseId);
+
+        allow create, update: if isHouseMember(houseId)
+          && validWasteType(wasteTypeId)
+          && request.resource.data.policy.kind in ['limited', 'unlimited', 'paid']
+          && (request.resource.data.policy.kind != 'limited'
+              || (request.resource.data.policy.yearlyQuota is int
+                  && request.resource.data.policy.yearlyQuota >= 0
+                  && request.resource.data.policy.yearlyQuota <= 500));
+
+        allow delete: if isHouseMember(houseId);
+      }
+
+      // ---- the collection ledger ------------------------------------------
+
+      match /collections/{eventId} {
+        allow read: if isHouseMember(houseId);
+
+        allow create, update: if isHouseMember(houseId)
+          && validWasteType(request.resource.data.wasteTypeId)
+          && validDateKey(request.resource.data.dateKey)
+          && request.resource.data.isExtra is bool
+          && request.resource.data.recordedByUid is string
+          && request.resource.data.recordedByName is string;
+
+        allow delete: if isHouseMember(houseId);
+      }
+    }
+
+    // ---- invites -----------------------------------------------------------
+    //
+    // Fetchable only by exact id, so codes cannot be enumerated. Anyone signed
+    // in who holds a code may read it in order to preview the house name before
+    // joining.
+    match /invites/{code} {
+      allow get: if signedIn();
+      allow list: if false;
+
+      // Create-only: an existing code cannot be overwritten, which is what makes
+      // the client's collision-retry loop safe.
+      allow create: if signedIn()
+        && code.size() >= 6
+        && code.size() <= 8
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.houseId is string
+        && request.auth.uid in houseData(request.resource.data.houseId).members
+        && request.resource.data.expiresAt is timestamp
+        && request.resource.data.expiresAt > request.time
+        && request.resource.data.expiresAt < request.time + duration.value(30, 'd');
+
+      allow update: if false;
+
+      allow delete: if signedIn()
+        && request.auth.uid in houseData(resource.data.houseId).members;
+    }
+  }
+}
