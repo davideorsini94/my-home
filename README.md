@@ -133,6 +133,31 @@ flutterfire configure --platforms=android,ios --android-package-name=it.davideor
 > una voce `oauth_client` con `"client_type": 3`. È il client web da cui
 > Google Sign-In ricava il token; se manca, l'accesso non funziona.
 
+### 4b. Solo per iOS: schema URL per l'accesso Google
+
+Su iOS il login Google torna all'app attraverso uno schema URL dichiarato in
+`ios/Runner/Info.plist`. Senza, il flusso web si completa e non rientra mai:
+l'app resta bloccata sulla schermata di accesso.
+
+Prendi `REVERSED_CLIENT_ID` da `ios/Runner/GoogleService-Info.plist` e aggiungilo
+a `ios/Runner/Info.plist`:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleTypeRole</key><string>Editor</string>
+    <key>CFBundleURLSchemes</key>
+    <array><string>com.googleusercontent.apps.IL-TUO-REVERSED-CLIENT-ID</string></array>
+  </dict>
+</array>
+```
+
+> Quel valore identifica il *tuo* progetto Firebase, quindi non sta nel
+> repository. In locale la modifica è nascosta a git con
+> `git update-index --skip-worktree ios/Runner/Info.plist`; per tornare a
+> vederla, `--no-skip-worktree`.
+
 ### 5. Pubblica le regole di sicurezza
 
 **Obbligatorio**: senza questo passaggio Firestore rifiuta ogni lettura e
