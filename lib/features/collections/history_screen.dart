@@ -40,7 +40,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         title: const Text('Storico raccolte'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/house/${widget.houseId}'),
+          onPressed: () => context.go('/house/${widget.houseId}/waste'),
         ),
         actions: [
           PopupMenuButton<int>(

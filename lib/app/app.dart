@@ -43,7 +43,9 @@ class _RubbishManagerAppState extends ConsumerState<RubbishManagerApp>
     if (houseId == null || !mounted) return;
     if (ref.read(currentUserProvider) == null) return;
     pendingNavigationHouseId.value = null;
-    ref.read(routerProvider).go('/house/$houseId');
+    // A waste reminder opens the waste dashboard directly: the hub is one tap
+    // further from what the notification was actually about.
+    ref.read(routerProvider).go('/house/$houseId/waste');
   }
 
   @override
@@ -82,6 +84,10 @@ class _RubbishManagerAppState extends ConsumerState<RubbishManagerApp>
 
     // A notification tap may have arrived before the user was signed in.
     ref.listen(authStateProvider, (_, _) => _openPendingHouse());
+
+    // Holds the maintenance listeners open for the whole session, so another
+    // member's execution is reflected without waiting for a resume.
+    ref.watch(maintenanceWatchProvider);
 
     return MaterialApp.router(
       title: 'Rubbish Manager',

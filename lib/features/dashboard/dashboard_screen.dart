@@ -54,19 +54,19 @@ class DashboardScreen extends ConsumerWidget {
         title: Text(house.value?.name ?? 'Abitazione'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/'),
+          onPressed: () => context.go('/house/$houseId'),
         ),
         actions: [
           IconButton(
             tooltip: 'Storico',
             icon: const Icon(Icons.history),
-            onPressed: () => context.go('/house/$houseId/history'),
+            onPressed: () => context.go('/house/$houseId/waste/history'),
           ),
           PopupMenuButton<String>(
-            onSelected: (value) => context.go('/house/$houseId/$value'),
+            onSelected: (value) => context.go('/house/$houseId/waste/$value'),
             itemBuilder: (context) => const [
               PopupMenuItem(
-                value: 'waste',
+                value: 'config',
                 child: ListTile(
                   leading: Icon(Icons.delete_outline),
                   title: Text('Rifiuti monitorati'),
@@ -77,20 +77,6 @@ class DashboardScreen extends ConsumerWidget {
                 child: ListTile(
                   leading: Icon(Icons.insights_outlined),
                   title: Text('Statistiche'),
-                ),
-              ),
-              PopupMenuItem(
-                value: 'members',
-                child: ListTile(
-                  leading: Icon(Icons.people_outline),
-                  title: Text('Membri e condivisione'),
-                ),
-              ),
-              PopupMenuItem(
-                value: 'edit',
-                child: ListTile(
-                  leading: Icon(Icons.edit_outlined),
-                  title: Text('Rinomina abitazione'),
                 ),
               ),
             ],
@@ -118,7 +104,7 @@ class DashboardScreen extends ConsumerWidget {
                     'Scegli quali tipi di rifiuto vuoi seguire in questa '
                     'abitazione e imposta i giorni di ritiro.',
                 action: FilledButton.icon(
-                  onPressed: () => context.go('/house/$houseId/waste'),
+                  onPressed: () => context.go('/house/$houseId/waste/config'),
                   icon: const Icon(Icons.tune),
                   label: const Text('Configura i rifiuti'),
                 ),
@@ -213,7 +199,7 @@ class _DashboardBody extends ConsumerWidget {
                 withoutSchedule.map((c) => c.type.label).join(', '),
               ),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.go('/house/$houseId/waste'),
+              onTap: () => context.go('/house/$houseId/waste/config'),
             ),
           ),
           const SizedBox(height: 16),

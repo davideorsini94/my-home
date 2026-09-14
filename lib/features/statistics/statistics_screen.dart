@@ -64,7 +64,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
         title: const Text('Statistiche'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/house/${widget.houseId}'),
+          onPressed: () => context.go('/house/${widget.houseId}/waste'),
         ),
       ),
       body: SafeArea(

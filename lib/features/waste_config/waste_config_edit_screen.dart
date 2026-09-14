@@ -82,7 +82,7 @@ class _WasteConfigEditScreenState extends ConsumerState<WasteConfigEditScreen> {
       // meaning the user can judge. Asked before navigating away.
       if (mounted) await ensureNotificationPermission(context, ref);
       ref.read(notificationSyncProvider).requestSync();
-      if (mounted) context.go('/house/${widget.houseId}/waste');
+      if (mounted) context.go('/house/${widget.houseId}/waste/config');
     } on Exception catch (e) {
       if (mounted) {
         showMessage(context, 'Salvataggio non riuscito: $e', isError: true);
@@ -125,7 +125,7 @@ class _WasteConfigEditScreenState extends ConsumerState<WasteConfigEditScreen> {
         title: Text(widget.type.label),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/house/${widget.houseId}/waste'),
+          onPressed: () => context.go('/house/${widget.houseId}/waste/config'),
         ),
       ),
       body: SafeArea(

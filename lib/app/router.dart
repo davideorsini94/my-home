@@ -7,7 +7,9 @@ import '../features/auth/login_screen.dart';
 import '../features/collections/history_screen.dart';
 import '../features/dashboard/dashboard_screen.dart';
 import '../features/houses/house_form_screen.dart';
+import '../features/house_hub/house_hub_screen.dart';
 import '../features/houses/house_list_screen.dart';
+import '../features/maintenance/maintenance_list_screen.dart';
 import '../features/members/join_house_screen.dart';
 import '../features/members/members_screen.dart';
 import '../features/settings/settings_screen.dart';
@@ -79,7 +81,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'house/:houseId',
             builder: (context, state) =>
-                DashboardScreen(houseId: state.pathParameters['houseId']!),
+                HouseHubScreen(houseId: state.pathParameters['houseId']!),
             routes: [
               GoRoute(
                 path: 'edit',
@@ -88,41 +90,56 @@ final routerProvider = Provider<GoRouter>((ref) {
                 ),
               ),
               GoRoute(
-                path: 'waste',
-                builder: (context, state) => WasteConfigListScreen(
+                path: 'members',
+                builder: (context, state) => MembersScreen(
                   houseId: state.pathParameters['houseId']!,
                 ),
+              ),
+              // Waste used to live at /house/:houseId itself; the hub took that
+              // place, so everything about it moved one level down.
+              GoRoute(
+                path: 'waste',
+                builder: (context, state) =>
+                    DashboardScreen(houseId: state.pathParameters['houseId']!),
                 routes: [
                   GoRoute(
-                    path: ':type',
-                    builder: (context, state) {
-                      final type = WasteType.fromId(
-                        state.pathParameters['type'],
-                      );
-                      if (type == null) return const _UnknownRouteScreen();
-                      return WasteConfigEditScreen(
-                        houseId: state.pathParameters['houseId']!,
-                        type: type,
-                      );
-                    },
+                    path: 'config',
+                    builder: (context, state) => WasteConfigListScreen(
+                      houseId: state.pathParameters['houseId']!,
+                    ),
+                    routes: [
+                      GoRoute(
+                        path: ':type',
+                        builder: (context, state) {
+                          final type = WasteType.fromId(
+                            state.pathParameters['type'],
+                          );
+                          if (type == null) return const _UnknownRouteScreen();
+                          return WasteConfigEditScreen(
+                            houseId: state.pathParameters['houseId']!,
+                            type: type,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'history',
+                    builder: (context, state) => HistoryScreen(
+                      houseId: state.pathParameters['houseId']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'stats',
+                    builder: (context, state) => StatisticsScreen(
+                      houseId: state.pathParameters['houseId']!,
+                    ),
                   ),
                 ],
               ),
               GoRoute(
-                path: 'history',
-                builder: (context, state) => HistoryScreen(
-                  houseId: state.pathParameters['houseId']!,
-                ),
-              ),
-              GoRoute(
-                path: 'stats',
-                builder: (context, state) => StatisticsScreen(
-                  houseId: state.pathParameters['houseId']!,
-                ),
-              ),
-              GoRoute(
-                path: 'members',
-                builder: (context, state) => MembersScreen(
+                path: 'maintenance',
+                builder: (context, state) => MaintenanceListScreen(
                   houseId: state.pathParameters['houseId']!,
                 ),
               ),

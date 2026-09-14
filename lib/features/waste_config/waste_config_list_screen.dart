@@ -25,7 +25,7 @@ class WasteConfigListScreen extends ConsumerWidget {
         title: const Text('Rifiuti monitorati'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/house/$houseId'),
+          onPressed: () => context.go('/house/$houseId/waste'),
         ),
       ),
       body: SafeArea(
@@ -121,7 +121,7 @@ class _WasteRow extends ConsumerWidget {
                 }
                 ref.read(notificationSyncProvider).requestSync();
                 if (value && context.mounted) {
-                  context.go('/house/$houseId/waste/${type.id}');
+                  context.go('/house/$houseId/waste/config/${type.id}');
                 }
               } on Exception catch (e) {
                 if (context.mounted) {
@@ -142,7 +142,7 @@ class _WasteRow extends ConsumerWidget {
                 children: [
                   TextButton.icon(
                     onPressed: () =>
-                        context.go('/house/$houseId/waste/${type.id}'),
+                        context.go('/house/$houseId/waste/config/${type.id}'),
                     icon: const Icon(Icons.tune, size: 18),
                     label: const Text('Configura'),
                   ),

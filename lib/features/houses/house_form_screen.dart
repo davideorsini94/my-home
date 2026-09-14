@@ -46,9 +46,9 @@ class _HouseFormScreenState extends ConsumerState<HouseFormScreen> {
           ownerUid: user.uid,
           ownerName: user.shortName,
         );
-        // Straight into the waste setup: a house with nothing monitored does
-        // nothing useful, so this is the natural next step.
-        if (mounted) context.go('/house/$id/waste');
+        // Lands on the hub so the choice between waste and maintenance is the
+        // first thing a new house presents.
+        if (mounted) context.go('/house/$id');
       }
     } on Exception catch (e) {
       if (mounted) {
