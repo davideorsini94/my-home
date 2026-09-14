@@ -47,6 +47,8 @@ dependencies:
   share_plus: ^12.0.2
   flutter_localizations:
     sdk: flutter
+  url_launcher: ^6.3.2
+  flutter_native_contact_picker: 0.0.11
 
 dev_dependencies:
   flutter_test:
