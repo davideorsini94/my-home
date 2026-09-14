@@ -79,8 +79,13 @@ dart pub global activate flutterfire_cli
 flutterfire configure --platforms=android,ios --android-package-name=it.davideorsini.rubbish_manager
 ```
 
-Questo genera `lib/firebase_options.dart` (sostituendo il segnaposto) e scarica
+Questo genera `lib/firebase_options.dart` e scarica
 `android/app/google-services.json`.
+
+> Questi file **non sono nel repository**: contengono le chiavi del progetto
+> Firebase di chi li ha generati, quindi ognuno usa i propri. Finché non lanci
+> il comando qui sopra il progetto non compila. Per sapere che forma deve avere
+> il file c'è `lib/firebase_options.dart.example`.
 
 ### 4. Registra l'impronta SHA-1 (obbligatorio per l'accesso Google)
 
