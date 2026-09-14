@@ -23,6 +23,12 @@ class FirestoreRefs {
   CollectionReference<Map<String, dynamic>> collections(String houseId) =>
       house(houseId).collection('collections');
 
+  CollectionReference<Map<String, dynamic>> maintenances(String houseId) =>
+      house(houseId).collection('maintenances');
+
+  CollectionReference<Map<String, dynamic>> maintenanceLog(String houseId) =>
+      house(houseId).collection('maintenanceLog');
+
   CollectionReference<Map<String, dynamic>> get invites =>
       _db.collection('invites');
 

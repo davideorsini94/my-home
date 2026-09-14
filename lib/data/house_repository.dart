@@ -82,6 +82,8 @@ class HouseRepository {
   Future<void> deleteHouse(String houseId) async {
     await _deleteAll(_refs.collections(houseId));
     await _deleteAll(_refs.wasteConfigs(houseId));
+    await _deleteAll(_refs.maintenanceLog(houseId));
+    await _deleteAll(_refs.maintenances(houseId));
     await _refs.house(houseId).delete();
   }
 

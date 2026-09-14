@@ -156,6 +156,54 @@ service cloud.firestore {
 
         allow delete: if isHouseMember(houseId);
       }
+
+      // ---- home maintenance -------------------------------------------------
+      //
+      // Next-due dates are never stored: they are derived client-side from the
+      // log below, so these rules only guard the shape of what is written.
+
+      function validRecurrence(r) {
+        return r.every is int && r.every >= 1
+          && ((r.unit == 'days'   && r.every <= 3660)
+           || (r.unit == 'weeks'  && r.every <= 520)
+           || (r.unit == 'months' && r.every <= 600)
+           || (r.unit == 'years'  && r.every <= 50));
+      }
+
+      match /maintenances/{maintenanceId} {
+        allow read: if isHouseMember(houseId);
+
+        allow create, update: if isHouseMember(houseId)
+          && request.resource.data.name is string
+          && request.resource.data.name.size() >= 1
+          && request.resource.data.name.size() <= 60
+          && request.resource.data.iconKey is string
+          && validRecurrence(request.resource.data.recurrence);
+
+        allow delete: if isHouseMember(houseId);
+      }
+
+      // Executions and skips have DISTINCT ids, so a skip can never overwrite an
+      // execution and the cost recorded with it; two members recording the same
+      // execution, or skipping the same due date, still land on one document.
+      function logIdMatches(entryId, d) {
+        return (d.status == 'done'    && entryId == d.maintenanceId + '_' + d.dateKey)
+            || (d.status == 'skipped' && entryId == d.maintenanceId + '_' + d.dateKey + '_skip');
+      }
+
+      match /maintenanceLog/{entryId} {
+        allow read: if isHouseMember(houseId);
+
+        allow create, update: if isHouseMember(houseId)
+          && request.resource.data.maintenanceId is string
+          && validDateKey(request.resource.data.dateKey)
+          && request.resource.data.status in ['done', 'skipped']
+          && logIdMatches(entryId, request.resource.data)
+          && request.resource.data.recordedByUid is string
+          && request.resource.data.recordedByName is string;
+
+        allow delete: if isHouseMember(houseId);
+      }
     }
 
     // ---- invites -----------------------------------------------------------

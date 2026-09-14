@@ -10,11 +10,16 @@ import '../data/collection_repository.dart';
 import '../data/firestore_refs.dart';
 import '../data/house_repository.dart';
 import '../data/invite_repository.dart';
+import '../data/maintenance_repository.dart';
 import '../data/waste_config_repository.dart';
 import '../domain/entities/app_user.dart';
 import '../domain/entities/collection_event.dart';
 import '../domain/entities/house.dart';
+import '../domain/entities/maintenance.dart';
+import '../domain/entities/maintenance_log_entry.dart';
 import '../domain/entities/waste_config.dart';
+import '../domain/maintenance_schedule.dart';
+import '../core/local_date.dart';
 import '../features/settings/settings_service.dart';
 import '../notifications/notification_scheduler.dart';
 import '../notifications/notification_service.dart';
@@ -57,10 +62,15 @@ final inviteRepositoryProvider = Provider<InviteRepository>(
   (ref) => InviteRepository(ref.watch(firestoreRefsProvider)),
 );
 
+final maintenanceRepositoryProvider = Provider<MaintenanceRepository>(
+  (ref) => MaintenanceRepository(ref.watch(firestoreRefsProvider)),
+);
+
 /// Overridden in `main` with the instance that was already initialised there,
 /// so the plugin is set up exactly once.
 final notificationServiceProvider = Provider<NotificationService>(
-  (ref) => throw UnimplementedError('notificationServiceProvider non inizializzato'),
+  (ref) =>
+      throw UnimplementedError('notificationServiceProvider non inizializzato'),
 );
 
 final notificationSchedulerProvider = Provider<NotificationScheduler>(
@@ -83,7 +93,8 @@ final currentUserProvider = Provider<AppUser?>(
 /// Seeded in `main` from disk so that the theme and the reminder hour are known
 /// before the first frame, with no loading flicker.
 final initialSettingsProvider = Provider<AppSettings>(
-  (ref) => throw UnimplementedError('initialSettingsProvider non inizializzato'),
+  (ref) =>
+      throw UnimplementedError('initialSettingsProvider non inizializzato'),
 );
 
 final settingsServiceProvider = Provider<SettingsService>(
@@ -140,6 +151,46 @@ final currentYearCollectionsProvider =
           .watch(collectionRepositoryProvider)
           .watchYear(houseId, DateTime.now().year),
     );
+
+// --------------------------------------------------------------- maintenance
+
+final maintenancesProvider = StreamProvider.family<List<Maintenance>, String>(
+  (ref, houseId) =>
+      ref.watch(maintenanceRepositoryProvider).watchMaintenances(houseId),
+);
+
+/// The ledger for a house, bounded below by how far back its maintenances can
+/// reach.
+///
+/// The bound depends on the maintenances themselves — a five-year cadence needs
+/// more history than a monthly one — so it is derived from them rather than
+/// fixed. A lower bound only: skipping a future occurrence writes a
+/// future-dated entry, and an upper bound would hide it.
+final maintenanceLogProvider =
+    StreamProvider.family<List<MaintenanceLogEntry>, String>((ref, houseId) {
+      final maintenances =
+          ref.watch(maintenancesProvider(houseId)).value ?? const [];
+      final from = logLowerBound(maintenances, LocalDate.today());
+      return ref.watch(maintenanceRepositoryProvider).watchLog(houseId, from);
+    });
+
+/// Keeps the maintenance listeners of every house alive for the whole session.
+///
+/// Without this they would only live while a maintenance screen is on screen,
+/// so a member's execution on another device would stay invisible — and a
+/// reminder for an already-done maintenance would fire — until the app was next
+/// resumed. The waste side avoids the same trap by resyncing on every snapshot.
+final maintenanceWatchProvider = Provider<void>((ref) {
+  final houses = ref.watch(myHousesProvider).value ?? const <House>[];
+  for (final house in houses) {
+    ref.listen(maintenancesProvider(house.id), (_, _) {
+      ref.read(notificationSyncProvider).requestSync();
+    });
+    ref.listen(maintenanceLogProvider(house.id), (_, _) {
+      ref.read(notificationSyncProvider).requestSync();
+    });
+  }
+});
 
 // -------------------------------------------------------- notification syncing
 
