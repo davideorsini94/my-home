@@ -93,9 +93,10 @@ List<ReminderPlan> buildReminderPlans({
       final configs = entry.value
         ..sort((a, b) => a.type.index.compareTo(b.type.index));
 
-      // Nothing to remind about if every type for that day is already recorded.
+      // Nothing to remind about if every type for that day is already settled —
+      // whether it was collected or deliberately skipped.
       final outstanding = configs
-          .where((c) => !_alreadyRecorded(house.events, c.type, pickupDate))
+          .where((c) => !_alreadySettled(house.events, c.type, pickupDate))
           .toList();
       if (outstanding.isEmpty) continue;
 
@@ -135,13 +136,15 @@ List<ReminderPlan> buildReminderPlans({
   return plans.length > maxPending ? plans.sublist(0, maxPending) : plans;
 }
 
-bool _alreadyRecorded(
+/// Whether this pickup has already been dealt with, either way.
+///
+/// A skip counts as settled: the user has said they are not putting that waste
+/// out, so reminding them again would be nagging about a decision they made.
+bool _alreadySettled(
   List<CollectionEvent> events,
   WasteType type,
   LocalDate date,
-) => events.any(
-  (e) => !e.isExtra && e.type == type && e.date == date,
-);
+) => events.any((e) => !e.isExtra && e.type == type && e.date == date);
 
 String _buildTitle(String houseName) => 'Ritiro di domani — $houseName';
 

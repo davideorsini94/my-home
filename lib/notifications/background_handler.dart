@@ -28,7 +28,8 @@ import 'pending_actions_store.dart';
 Future<void> onBackgroundNotificationResponse(
   NotificationResponse response,
 ) async {
-  if (response.actionId != NotificationService.markDoneActionId) return;
+  final status = statusForAction(response.actionId);
+  if (status == null) return;
 
   final payload = NotificationPayload.decode(response.payload);
   if (payload == null) return;
@@ -39,19 +40,33 @@ Future<void> onBackgroundNotificationResponse(
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    await recordFromPayload(payload);
+    await recordFromPayload(payload, status);
   } on Exception catch (e) {
     debugPrint('Registrazione da notifica non riuscita, accodata: $e');
-    await const PendingActionsStore().add(payload.encode());
+    await const PendingActionsStore().add(payload.encode(status: status));
   }
 }
+
+/// Maps a notification action id onto the record it should write.
+///
+/// Returns null for anything else — a tap on the notification body, or an
+/// action id from a future version — so an unrecognised id can never silently
+/// write the wrong thing.
+CollectionStatus? statusForAction(String? actionId) => switch (actionId) {
+  NotificationService.markDoneActionId => CollectionStatus.done,
+  NotificationService.skipActionId => CollectionStatus.skipped,
+  _ => null,
+};
 
 /// Writes the collections described by a notification payload.
 ///
 /// Shared by the background isolate and by the replay of any queued action on
 /// the next app launch. Scheduled collections use deterministic document ids,
 /// so running this twice records the same single collection.
-Future<void> recordFromPayload(NotificationPayload payload) async {
+Future<void> recordFromPayload(
+  NotificationPayload payload, [
+  CollectionStatus status = CollectionStatus.done,
+]) async {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) {
     throw StateError('Nessun utente autenticato');
@@ -71,6 +86,7 @@ Future<void> recordFromPayload(NotificationPayload payload) async {
       uid: user.uid,
       userName: name,
       source: CollectionSource.notification,
+      status: status,
     );
   }
 }

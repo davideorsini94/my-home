@@ -71,6 +71,9 @@ Map<WasteType, int> countByType(Iterable<CollectionEvent> events, int year) {
   final counts = <WasteType, int>{};
   for (final event in events) {
     if (event.date.year != year) continue;
+    // A skipped pickup is on record so the reminder stops asking, but nothing
+    // was put out, so it consumes no allowance.
+    if (!event.countsTowardsQuota) continue;
     counts.update(event.type, (v) => v + 1, ifAbsent: () => 1);
   }
   return counts;
@@ -87,7 +90,10 @@ QuotaStatus quotaStatusFor({
 }) {
   var used = 0;
   for (final event in events) {
-    if (event.type == config.type && event.date.year == year) used++;
+    if (event.type != config.type) continue;
+    if (event.date.year != year) continue;
+    if (!event.countsTowardsQuota) continue;
+    used++;
   }
   return QuotaStatus(
     type: config.type,

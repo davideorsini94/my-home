@@ -178,7 +178,12 @@ class _EventTile extends StatelessWidget {
     final theme = Theme.of(context);
 
     return ListTile(
-      leading: WasteAvatar(type: event.type, size: 40),
+      // A skipped record is dimmed so a glance down the list separates what was
+      // actually collected from what was deliberately not.
+      leading: Opacity(
+        opacity: event.isSkipped ? 0.45 : 1,
+        child: WasteAvatar(type: event.type, size: 40),
+      ),
       title: Row(
         children: [
           Flexible(
@@ -191,18 +196,18 @@ class _EventTile extends StatelessWidget {
           ),
           if (event.isExtra) ...[
             const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.secondaryContainer,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                'extra',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSecondaryContainer,
-                ),
-              ),
+            _Tag(
+              label: 'extra',
+              background: theme.colorScheme.secondaryContainer,
+              foreground: theme.colorScheme.onSecondaryContainer,
+            ),
+          ],
+          if (event.isSkipped) ...[
+            const SizedBox(width: 8),
+            _Tag(
+              label: 'saltata',
+              background: theme.colorScheme.surfaceContainerHighest,
+              foreground: theme.colorScheme.onSurfaceVariant,
             ),
           ],
         ],
@@ -241,4 +246,31 @@ class _EventTile extends StatelessWidget {
       onTap: () => showEditEventSheet(context, houseId, event, siblings),
     );
   }
+}
+
+class _Tag extends StatelessWidget {
+  const _Tag({
+    required this.label,
+    required this.background,
+    required this.foreground,
+  });
+
+  final String label;
+  final Color background;
+  final Color foreground;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+    decoration: BoxDecoration(
+      color: background,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Text(
+      label,
+      style: Theme.of(
+        context,
+      ).textTheme.labelSmall?.copyWith(color: foreground),
+    ),
+  );
 }

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../core/local_date.dart';
 import '../core/waste_catalogue.dart';
+import '../domain/entities/collection_event.dart';
 
 /// What a scheduled reminder carries, so that the action button can record the
 /// collection without the app ever coming to the foreground.
@@ -26,8 +27,29 @@ class NotificationPayload {
   List<WasteType> get wasteTypes =>
       types.map(WasteType.fromId).whereType<WasteType>().toList();
 
-  String encode() =>
-      jsonEncode({'houseId': houseId, 'dateKey': dateKey, 'types': types});
+  /// Serialises the payload, optionally carrying the outcome an action chose.
+  ///
+  /// The status only travels with a queued action awaiting replay; the payload
+  /// attached to a scheduled reminder has none, because the outcome is not
+  /// known until the user taps a button.
+  String encode({CollectionStatus? status}) => jsonEncode({
+    'houseId': houseId,
+    'dateKey': dateKey,
+    'types': types,
+    if (status != null) 'status': status.name,
+  });
+
+  /// The outcome recorded in a queued action, defaulting to a real collection
+  /// for anything written before skipping existed.
+  static CollectionStatus decodeStatus(String? raw) {
+    if (raw == null || raw.isEmpty) return CollectionStatus.done;
+    try {
+      final map = jsonDecode(raw) as Map<String, dynamic>;
+      return CollectionStatus.fromId(map['status'] as String?);
+    } on FormatException {
+      return CollectionStatus.done;
+    }
+  }
 
   static NotificationPayload? decode(String? raw) {
     if (raw == null || raw.isEmpty) return null;

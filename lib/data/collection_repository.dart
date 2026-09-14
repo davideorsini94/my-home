@@ -52,6 +52,7 @@ class CollectionRepository {
       recordedByUid: data['recordedByUid'] as String? ?? '',
       recordedByName: data['recordedByName'] as String? ?? '',
       source: CollectionSource.fromId(data['source'] as String?),
+      status: CollectionStatus.fromId(data['status'] as String?),
       note: data['note'] as String?,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
       hasPendingWrites: doc.metadata.hasPendingWrites,
@@ -72,6 +73,7 @@ class CollectionRepository {
     required String uid,
     required String userName,
     CollectionSource source = CollectionSource.app,
+    CollectionStatus status = CollectionStatus.done,
     String? note,
   }) async {
     final id = CollectionEvent.scheduledId(type, date);
@@ -82,6 +84,7 @@ class CollectionRepository {
       'recordedByUid': uid,
       'recordedByName': userName,
       'source': source.name,
+      'status': status.name,
       if (note != null && note.isNotEmpty) 'note': note,
       'createdAt': FieldValue.serverTimestamp(),
     });
@@ -110,6 +113,7 @@ class CollectionRepository {
       'recordedByUid': uid,
       'recordedByName': userName,
       'source': CollectionSource.app.name,
+      'status': CollectionStatus.done.name,
       if (note != null && note.isNotEmpty) 'note': note,
       'createdAt': FieldValue.serverTimestamp(),
     });
@@ -134,6 +138,7 @@ class CollectionRepository {
     required CollectionEvent original,
     required WasteType type,
     required LocalDate date,
+    CollectionStatus? status,
     String? note,
   }) async {
     final newId = idForEvent(
@@ -150,6 +155,7 @@ class CollectionRepository {
       'recordedByUid': original.recordedByUid,
       'recordedByName': original.recordedByName,
       'source': original.source.name,
+      'status': (status ?? original.status).name,
       if (note != null && note.isNotEmpty) 'note': note,
       'createdAt': original.createdAt != null
           ? Timestamp.fromDate(original.createdAt!)

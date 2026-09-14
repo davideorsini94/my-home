@@ -125,6 +125,12 @@ class NotificationScheduler {
           showsUserInterface: false,
           cancelNotification: true,
         ),
+        AndroidNotificationAction(
+          NotificationService.skipActionId,
+          'Salta',
+          showsUserInterface: false,
+          cancelNotification: true,
+        ),
       ],
     ),
     iOS: DarwinNotificationDetails(categoryIdentifier: 'pickup'),

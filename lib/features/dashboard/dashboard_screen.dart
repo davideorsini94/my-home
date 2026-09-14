@@ -294,11 +294,11 @@ class _PickupCard extends ConsumerStatefulWidget {
 class _PickupCardState extends ConsumerState<_PickupCard> {
   bool _busy = false;
 
-  /// Only pickups that have arrived can be confirmed; a future one has not
+  /// Only pickups that have arrived can be settled; a future one has not
   /// happened yet.
   bool get _isActionable => widget.today.daysUntil(widget.pickup.date) <= 1;
 
-  Future<void> _record() async {
+  Future<void> _record(CollectionStatus status) async {
     final user = ref.read(currentUserProvider);
     if (user == null) return;
 
@@ -312,6 +312,7 @@ class _PickupCardState extends ConsumerState<_PickupCard> {
             date: widget.pickup.date,
             uid: user.uid,
             userName: user.shortName,
+            status: status,
           );
       ref.read(notificationSyncProvider).requestSync();
     } on Exception catch (e) {
@@ -349,59 +350,87 @@ class _PickupCardState extends ConsumerState<_PickupCard> {
     final color = wasteColor(context, pickup.config.type);
     final isToday = pickup.date == widget.today;
 
+    final settled = pickup.recorded;
+    final isSkipped = settled?.isSkipped ?? false;
+
     return Card(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
-        child: Row(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        child: Column(
           children: [
-            Container(
-              width: 4,
-              height: 48,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(width: 12),
-            WasteAvatar(type: pickup.config.type, size: 40),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    pickup.config.type.label,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+            Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    formatRelative(pickup.date, widget.today) +
-                        (isToday ? '' : ' · ${formatShort(pickup.date)}'),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  QuotaBadge(status: pickup.status),
-                ],
-              ),
-            ),
-            if (_busy)
-              const Padding(
-                padding: EdgeInsets.all(12),
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
                 ),
-              )
-            else if (pickup.isRecorded)
-              Column(
-                mainAxisSize: MainAxisSize.min,
+                const SizedBox(width: 12),
+                WasteAvatar(type: pickup.config.type, size: 40),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        pickup.config.type.label,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        formatRelative(pickup.date, widget.today) +
+                            (isToday ? '' : ' · ${formatShort(pickup.date)}'),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      QuotaBadge(status: pickup.status),
+                    ],
+                  ),
+                ),
+                if (_busy)
+                  const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+              ],
+            ),
+
+            if (!_busy && settled != null) ...[
+              const SizedBox(height: 10),
+              Row(
                 children: [
-                  Icon(Icons.check_circle, color: theme.colorScheme.primary),
+                  Icon(
+                    isSkipped ? Icons.next_plan_outlined : Icons.check_circle,
+                    size: 20,
+                    color: isSkipped
+                        ? theme.colorScheme.onSurfaceVariant
+                        : theme.colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      isSkipped
+                          // Spelled out, because a skip looks like a done
+                          // pickup at a glance and the two mean opposite
+                          // things for the counter.
+                          ? 'Saltata — non conta nel totale'
+                          : 'Registrata',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
                   TextButton(
                     onPressed: _undo,
                     style: TextButton.styleFrom(
@@ -412,19 +441,33 @@ class _PickupCardState extends ConsumerState<_PickupCard> {
                     child: const Text('Annulla'),
                   ),
                 ],
-              )
-            else if (_isActionable)
-              FilledButton.tonal(
-                onPressed: _record,
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  minimumSize: Size.zero,
-                ),
-                child: const Text('Fatta'),
               ),
+            ] else if (!_busy && _isActionable) ...[
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => _record(CollectionStatus.skipped),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(0, 40),
+                      ),
+                      child: const Text('Salta'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: FilledButton.tonal(
+                      onPressed: () => _record(CollectionStatus.done),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 40),
+                      ),
+                      child: const Text('Raccolta fatta'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),

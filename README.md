@@ -18,9 +18,13 @@ Interfaccia in italiano, codice in inglese.
 - **Calendario**: per ogni tipo imposti i giorni della settimana e la frequenza
   (ogni settimana, ogni 2 settimane = "ogni 15 giorni", ogni 3 o 4 settimane).
 - **Promemoria**: la sera prima di ogni ritiro arriva una notifica che dice cosa
-  viene ritirato l'indomani e quanti ritiri gratuiti restano. La notifica ha il
-  pulsante **Raccolta fatta** che registra il ritiro senza aprire l'app.
+  viene ritirato l'indomani e quanti ritiri gratuiti restano. La notifica ha due
+  pulsanti, **Raccolta fatta** e **Salta**, che registrano l'esito senza aprire
+  l'app.
 - **Conteggio**: si incrementa dal pulsante in app o confermando la notifica.
+- **Salta**: se quel giorno non porti fuori nulla, marchi il ritiro come
+  saltato. Non consuma un ritiro gratuito, non compare nelle statistiche e
+  zittisce il promemoria — ma resta nello storico ed è annullabile.
 - **Storico**: tutte le raccolte degli ultimi 5 anni, modificabili ed
   eliminabili; i contatori si ricalcolano da soli.
 - **Statistiche**: andamento mensile dell'anno scelto (colonne divise per tipo
@@ -179,6 +183,15 @@ magari offline — le due scritture finiscono sullo stesso documento e il
 conteggio resta 1. Nessuna transazione, nessuna race condition. Le raccolte
 *extra* hanno invece un suffisso casuale, perché due sacchi extra nello stesso
 giorno sono due eventi veri.
+
+**Saltare è un evento, non un'assenza di evento.** Un ritiro saltato viene
+scritto nel registro con lo *stesso* id deterministico di una raccolta, con
+`status: skipped`. Così eredita gratis tutte le garanzie: se tu e tuo padre
+saltate lo stesso ritiro conta comunque una volta sola, e se uno salta e
+l'altro conferma vince l'ultima scelta invece di creare due record in conflitto.
+Non consuma quota, esclude il ritiro dalle statistiche e ferma il promemoria.
+I documenti scritti prima che il salto esistesse non hanno il campo `status` e
+vengono letti come raccolte reali, che è ciò che erano.
 
 **I promemoria sono notifiche locali, non push.** Funzionano offline e non
 richiedono un server. Il testo però viene fissato quando la notifica è

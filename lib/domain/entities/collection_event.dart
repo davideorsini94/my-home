@@ -10,6 +10,21 @@ enum CollectionSource {
       id == 'notification' ? CollectionSource.notification : CollectionSource.app;
 }
 
+/// What happened to a scheduled pickup.
+enum CollectionStatus {
+  /// The waste really was put out, so it consumes an allowance.
+  done,
+
+  /// The pickup was deliberately skipped: nothing was put out, so it must not
+  /// count, but it is still on record so the reminder stops asking.
+  skipped;
+
+  /// Documents written before skipping existed carry no status at all, and
+  /// they were all real collections — hence the default.
+  static CollectionStatus fromId(String? id) =>
+      id == 'skipped' ? CollectionStatus.skipped : CollectionStatus.done;
+}
+
 /// One recorded collection — the ledger entry that every counter is derived
 /// from.
 ///
@@ -27,6 +42,7 @@ class CollectionEvent {
     required this.recordedByUid,
     required this.recordedByName,
     required this.source,
+    this.status = CollectionStatus.done,
     this.note,
     this.createdAt,
     this.hasPendingWrites = false,
@@ -39,8 +55,14 @@ class CollectionEvent {
   final String recordedByUid;
   final String recordedByName;
   final CollectionSource source;
+  final CollectionStatus status;
   final String? note;
   final DateTime? createdAt;
+
+  bool get isSkipped => status == CollectionStatus.skipped;
+
+  /// Whether this record consumes a free collection.
+  bool get countsTowardsQuota => !isSkipped;
 
   /// True while the write is still queued locally and not yet acknowledged by
   /// the server, so the UI can show a "in attesa di sincronizzazione" hint.
@@ -61,6 +83,7 @@ class CollectionEvent {
     'recordedByUid': recordedByUid,
     'recordedByName': recordedByName,
     'source': source.name,
+    'status': status.name,
     if (note != null && note!.isNotEmpty) 'note': note,
   };
 
@@ -69,6 +92,7 @@ class CollectionEvent {
     WasteType? type,
     LocalDate? date,
     bool? isExtra,
+    CollectionStatus? status,
     String? note,
   }) => CollectionEvent(
     id: id ?? this.id,
@@ -78,6 +102,7 @@ class CollectionEvent {
     recordedByUid: recordedByUid,
     recordedByName: recordedByName,
     source: source,
+    status: status ?? this.status,
     note: note ?? this.note,
     createdAt: createdAt,
     hasPendingWrites: hasPendingWrites,

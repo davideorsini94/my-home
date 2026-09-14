@@ -20,8 +20,9 @@ class NotificationService {
   static const channelDescription =
       'Avviso la sera prima di ogni ritiro dei rifiuti';
 
-  /// Id of the notification action button.
+  /// Ids of the notification action buttons.
   static const markDoneActionId = 'mark_done';
+  static const skipActionId = 'skip';
 
   bool _initialized = false;
   bool _useExactAlarms = false;
@@ -56,6 +57,11 @@ class NotificationService {
             DarwinNotificationAction.plain(
               markDoneActionId,
               'Raccolta fatta',
+              options: const {DarwinNotificationActionOption.foreground},
+            ),
+            DarwinNotificationAction.plain(
+              skipActionId,
+              'Salta',
               options: const {DarwinNotificationActionOption.foreground},
             ),
           ],

@@ -3,7 +3,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'background_handler.dart';
 import 'notification_payload.dart';
-import 'notification_service.dart';
 import 'pending_actions_store.dart';
 
 /// The house a notification tap asked to open, consumed once by the app.
@@ -24,12 +23,13 @@ Future<void> onForegroundNotificationResponse(
   final payload = NotificationPayload.decode(response.payload);
   if (payload == null) return;
 
-  if (response.actionId == NotificationService.markDoneActionId) {
+  final status = statusForAction(response.actionId);
+  if (status != null) {
     try {
-      await recordFromPayload(payload);
+      await recordFromPayload(payload, status);
     } on Exception catch (e) {
       debugPrint('Registrazione da notifica in primo piano non riuscita: $e');
-      await const PendingActionsStore().add(payload.encode());
+      await const PendingActionsStore().add(payload.encode(status: status));
     }
     return;
   }

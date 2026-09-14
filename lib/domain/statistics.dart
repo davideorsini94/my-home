@@ -60,6 +60,9 @@ MonthlyBreakdown monthlyBreakdown({
   final byMonth = List.generate(12, (_) => <WasteType, int>{});
   for (final event in events) {
     if (event.date.year != year) continue;
+    // Skipped pickups are excluded: the charts show what was actually
+    // collected, matching the counters exactly.
+    if (!event.countsTowardsQuota) continue;
     final month = byMonth[event.date.month - 1];
     month.update(event.type, (v) => v + 1, ifAbsent: () => 1);
   }

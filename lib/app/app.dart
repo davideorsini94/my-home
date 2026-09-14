@@ -59,7 +59,9 @@ class _RubbishManagerAppState extends ConsumerState<RubbishManagerApp>
       final payload = NotificationPayload.decode(raw);
       if (payload == null) continue;
       try {
-        await recordFromPayload(payload);
+        // The queued entry carries the outcome the user chose, so a skip
+        // replayed later stays a skip rather than becoming a collection.
+        await recordFromPayload(payload, NotificationPayload.decodeStatus(raw));
       } on Exception catch (e) {
         debugPrint('Replay azione notifica non riuscito: $e');
         await const PendingActionsStore().add(raw);

@@ -42,6 +42,7 @@ class _EditEventSheet extends ConsumerStatefulWidget {
 class _EditEventSheetState extends ConsumerState<_EditEventSheet> {
   late WasteType _type = widget.event.type;
   late LocalDate _date = widget.event.date;
+  late CollectionStatus _status = widget.event.status;
   late final TextEditingController _noteController = TextEditingController(
     text: widget.event.note ?? '',
   );
@@ -84,6 +85,7 @@ class _EditEventSheetState extends ConsumerState<_EditEventSheet> {
             original: widget.event,
             type: _type,
             date: _date,
+            status: _status,
             note: _noteController.text.trim(),
           );
       ref.read(notificationSyncProvider).requestSync();
@@ -239,6 +241,26 @@ class _EditEventSheetState extends ConsumerState<_EditEventSheet> {
                   subtitle: Text('Le due registrazioni verranno unite.'),
                 ),
               ),
+
+            if (!widget.event.isExtra) ...[
+              const SizedBox(height: 8),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                secondary: const Icon(Icons.next_plan_outlined),
+                title: const Text('Ritiro saltato'),
+                subtitle: Text(
+                  _status == CollectionStatus.skipped
+                      ? 'Resta nello storico ma non conta nel totale annuale'
+                      : 'Attiva se quel giorno non hai portato fuori nulla',
+                ),
+                value: _status == CollectionStatus.skipped,
+                onChanged: (value) => setState(
+                  () => _status = value
+                      ? CollectionStatus.skipped
+                      : CollectionStatus.done,
+                ),
+              ),
+            ],
 
             const SizedBox(height: 12),
             TextField(
