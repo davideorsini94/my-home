@@ -9,6 +9,7 @@ import '../features/dashboard/dashboard_screen.dart';
 import '../features/houses/house_form_screen.dart';
 import '../features/house_hub/house_hub_screen.dart';
 import '../features/houses/house_list_screen.dart';
+import '../features/maintenance/maintenance_form_screen.dart';
 import '../features/maintenance/maintenance_list_screen.dart';
 import '../features/members/join_house_screen.dart';
 import '../features/members/members_screen.dart';
@@ -142,6 +143,22 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) => MaintenanceListScreen(
                   houseId: state.pathParameters['houseId']!,
                 ),
+                routes: [
+                  // Declared before ':maintenanceId/edit' so the literal wins.
+                  GoRoute(
+                    path: 'new',
+                    builder: (context, state) => MaintenanceFormScreen(
+                      houseId: state.pathParameters['houseId']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: ':maintenanceId/edit',
+                    builder: (context, state) => MaintenanceFormScreen(
+                      houseId: state.pathParameters['houseId']!,
+                      maintenanceId: state.pathParameters['maintenanceId'],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
