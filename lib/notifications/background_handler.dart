@@ -6,9 +6,13 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../core/local_date.dart';
 import '../data/collection_repository.dart';
+import '../data/maintenance_repository.dart';
 import '../domain/entities/collection_event.dart';
+import '../domain/entities/maintenance_log_entry.dart';
 import '../data/firestore_refs.dart';
 import '../firebase_options.dart';
+import 'maintenance_payload.dart';
+import 'maintenance_reminder_plan.dart';
 import 'notification_payload.dart';
 import 'notification_service.dart';
 import 'pending_actions_store.dart';
@@ -28,6 +32,15 @@ import 'pending_actions_store.dart';
 Future<void> onBackgroundNotificationResponse(
   NotificationResponse response,
 ) async {
+  // The day the button was pressed, captured before anything can fail, so an
+  // action replayed days later still records when it actually happened.
+  final tapDay = LocalDate.today();
+
+  if (MaintenancePayload.kindOf(response.payload) == ReminderKind.maintenance) {
+    await _handleMaintenanceAction(response, tapDay);
+    return;
+  }
+
   final status = statusForAction(response.actionId);
   if (status == null) return;
 
@@ -44,6 +57,75 @@ Future<void> onBackgroundNotificationResponse(
   } on Exception catch (e) {
     debugPrint('Registrazione da notifica non riuscita, accodata: $e');
     await const PendingActionsStore().add(payload.encode(status: status));
+  }
+}
+
+Future<void> _handleMaintenanceAction(
+  NotificationResponse response,
+  LocalDate tapDay,
+) async {
+  final status = maintenanceStatusForAction(response.actionId);
+  if (status == null) return;
+
+  final payload = MaintenancePayload.decode(response.payload);
+  if (payload == null) return;
+
+  WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    await recordMaintenanceFromPayload(payload, status, tapDay);
+  } on Exception catch (e) {
+    debugPrint('Registrazione manutenzione da notifica non riuscita: $e');
+    await const PendingActionsStore().add(
+      payload.encode(status: status, doneDateKey: tapDay.toKey()),
+    );
+  }
+}
+
+/// Settles a maintenance from a notification action.
+///
+/// Both outcomes are blind writes on deterministic ids — nothing is read first
+/// — which is what makes this safe from a background isolate where no UI, no
+/// providers and no cached state exist.
+Future<void> recordMaintenanceFromPayload(
+  MaintenancePayload payload,
+  MaintenanceEntryStatus status, [
+  LocalDate? doneDate,
+]) async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) {
+    throw StateError('Nessun utente autenticato');
+  }
+
+  final repository = MaintenanceRepository(
+    FirestoreRefs(FirebaseFirestore.instance),
+  );
+  final name = _displayName(user);
+
+  if (status == MaintenanceEntryStatus.done) {
+    await repository.recordExecution(
+      houseId: payload.houseId,
+      maintenanceId: payload.maintenanceId,
+      // The execution happened on the day the button was pressed, which is not
+      // necessarily the due date and not necessarily today at replay time.
+      date: doneDate ?? LocalDate.today(),
+      uid: user.uid,
+      userName: name,
+      source: MaintenanceEntrySource.notification,
+    );
+  } else {
+    await repository.recordSkip(
+      houseId: payload.houseId,
+      maintenanceId: payload.maintenanceId,
+      // A skip is keyed to the DUE date the reminder was about, never to today.
+      dueDate: payload.dueDate,
+      uid: user.uid,
+      userName: name,
+      source: MaintenanceEntrySource.notification,
+    );
   }
 }
 

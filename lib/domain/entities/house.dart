@@ -67,9 +67,8 @@ class HouseMember {
   final HouseRole role;
   final String? displayName;
 
-  String get label => displayName?.trim().isNotEmpty == true
-      ? displayName!.trim()
-      : 'Utente';
+  String get label =>
+      displayName?.trim().isNotEmpty == true ? displayName!.trim() : 'Utente';
 
   String get initials {
     final parts = label.split(RegExp(r'\s+')).where((p) => p.isNotEmpty);

@@ -148,13 +148,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 settings.copyWith(notificationsEnabled: value),
               ),
             ),
+            SwitchListTile(
+              secondary: const Icon(Icons.build_outlined),
+              title: const Text('Promemoria manutenzioni'),
+              subtitle: const Text(
+                'Avviso il giorno in cui una manutenzione è in scadenza',
+              ),
+              value: settings.maintenanceRemindersEnabled,
+              onChanged: settings.notificationsEnabled
+                  ? (value) => notifier.update(
+                      settings.copyWith(maintenanceRemindersEnabled: value),
+                    )
+                  : null,
+            ),
             ListTile(
               leading: const Icon(Icons.schedule),
               title: const Text('Orario della notifica'),
               subtitle: Text(
                 '${settings.notificationHour.toString().padLeft(2, '0')}:'
                 '${settings.notificationMinute.toString().padLeft(2, '0')} '
-                '— la sera prima del ritiro',
+                '— la sera prima dei ritiri, il giorno stesso per le manutenzioni',
               ),
               enabled: settings.notificationsEnabled,
               onTap: settings.notificationsEnabled

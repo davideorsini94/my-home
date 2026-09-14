@@ -1,14 +1,6 @@
 import 'local_date.dart';
 
-const _weekdayShort = [
-  'lun',
-  'mar',
-  'mer',
-  'gio',
-  'ven',
-  'sab',
-  'dom',
-];
+const _weekdayShort = ['lun', 'mar', 'mer', 'gio', 'ven', 'sab', 'dom'];
 
 const _weekdayLong = [
   'lunedì',

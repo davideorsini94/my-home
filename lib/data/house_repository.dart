@@ -17,11 +17,10 @@ class HouseRepository {
       .where('memberUids', arrayContains: uid)
       .snapshots()
       .map(
-        (snap) =>
-            snap.docs.map(_toHouse).toList()
-              ..sort(
-                (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-              ),
+        (snap) => snap.docs.map(_toHouse).toList()
+          ..sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          ),
       );
 
   Stream<House?> watchHouse(String houseId) =>
@@ -105,7 +104,8 @@ class HouseRepository {
   House _toHouse(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? const {};
     final rawMembers = (data['members'] as Map?)?.cast<String, Object?>() ?? {};
-    final rawNames = (data['memberNames'] as Map?)?.cast<String, Object?>() ?? {};
+    final rawNames =
+        (data['memberNames'] as Map?)?.cast<String, Object?>() ?? {};
     return House(
       id: doc.id,
       name: data['name'] as String? ?? 'Abitazione',

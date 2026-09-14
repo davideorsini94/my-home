@@ -218,10 +218,7 @@ class _YearDetail extends StatelessWidget {
                 ),
                 if (selectedMonth != null) ...[
                   const SizedBox(height: 16),
-                  _MonthDetail(
-                    breakdown: breakdown,
-                    month: selectedMonth!,
-                  ),
+                  _MonthDetail(breakdown: breakdown, month: selectedMonth!),
                 ],
                 const SizedBox(height: 20),
                 const Divider(),

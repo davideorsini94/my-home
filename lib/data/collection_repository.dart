@@ -13,12 +13,11 @@ class CollectionRepository {
 
   final FirestoreRefs _refs;
 
-  Query<Map<String, dynamic>> _yearQuery(String houseId, int year) =>
-      _refs
-          .collections(houseId)
-          .where('dateKey', isGreaterThanOrEqualTo: '$year-01-01')
-          .where('dateKey', isLessThanOrEqualTo: '$year-12-31')
-          .orderBy('dateKey', descending: true);
+  Query<Map<String, dynamic>> _yearQuery(String houseId, int year) => _refs
+      .collections(houseId)
+      .where('dateKey', isGreaterThanOrEqualTo: '$year-01-01')
+      .where('dateKey', isLessThanOrEqualTo: '$year-12-31')
+      .orderBy('dateKey', descending: true);
 
   /// One listener per open house covers both the history screen and every
   /// counter, and is served from the offline cache when there is no network.

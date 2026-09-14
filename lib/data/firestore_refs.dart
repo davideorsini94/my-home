@@ -7,7 +7,8 @@ class FirestoreRefs {
 
   final FirebaseFirestore _db;
 
-  CollectionReference<Map<String, dynamic>> get users => _db.collection('users');
+  CollectionReference<Map<String, dynamic>> get users =>
+      _db.collection('users');
 
   DocumentReference<Map<String, dynamic>> user(String uid) => users.doc(uid);
 

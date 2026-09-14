@@ -178,10 +178,7 @@ class _WasteSummary extends ConsumerWidget {
     final today = LocalDate.today();
 
     if (enabled.isEmpty) {
-      return _SummaryLine(
-        icon: Icons.tune,
-        text: 'Nessun rifiuto monitorato',
-      );
+      return _SummaryLine(icon: Icons.tune, text: 'Nessun rifiuto monitorato');
     }
 
     final upcoming =
@@ -238,9 +235,7 @@ class _MaintenanceSummary extends ConsumerWidget {
       return _SummaryLine(
         icon: Icons.warning_amber_outlined,
         color: theme.colorScheme.error,
-        text: due == 1
-            ? '1 manutenzione da fare'
-            : '$due manutenzioni da fare',
+        text: due == 1 ? '1 manutenzione da fare' : '$due manutenzioni da fare',
       );
     }
 

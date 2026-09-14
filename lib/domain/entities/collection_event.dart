@@ -6,8 +6,9 @@ enum CollectionSource {
   app,
   notification;
 
-  static CollectionSource fromId(String? id) =>
-      id == 'notification' ? CollectionSource.notification : CollectionSource.app;
+  static CollectionSource fromId(String? id) => id == 'notification'
+      ? CollectionSource.notification
+      : CollectionSource.app;
 }
 
 /// What happened to a scheduled pickup.

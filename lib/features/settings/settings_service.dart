@@ -11,6 +11,7 @@ class AppSettings {
     this.notificationHour = 20,
     this.notificationMinute = 0,
     this.notificationsEnabled = true,
+    this.maintenanceRemindersEnabled = true,
     this.exactAlarms = false,
     this.themeMode = ThemeMode.system,
   });
@@ -18,6 +19,9 @@ class AppSettings {
   final int notificationHour;
   final int notificationMinute;
   final bool notificationsEnabled;
+
+  /// Maintenance reminders can be silenced without losing the waste ones.
+  final bool maintenanceRemindersEnabled;
   final bool exactAlarms;
   final ThemeMode themeMode;
 
@@ -28,12 +32,15 @@ class AppSettings {
     int? notificationHour,
     int? notificationMinute,
     bool? notificationsEnabled,
+    bool? maintenanceRemindersEnabled,
     bool? exactAlarms,
     ThemeMode? themeMode,
   }) => AppSettings(
     notificationHour: notificationHour ?? this.notificationHour,
     notificationMinute: notificationMinute ?? this.notificationMinute,
     notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+    maintenanceRemindersEnabled:
+        maintenanceRemindersEnabled ?? this.maintenanceRemindersEnabled,
     exactAlarms: exactAlarms ?? this.exactAlarms,
     themeMode: themeMode ?? this.themeMode,
   );
@@ -45,6 +52,7 @@ class SettingsService {
   static const _hourKey = 'notification_hour';
   static const _minuteKey = 'notification_minute';
   static const _enabledKey = 'notifications_enabled';
+  static const _maintenanceKey = 'maintenance_reminders_enabled';
   static const _exactKey = 'exact_alarms';
   static const _themeKey = 'theme_mode';
 
@@ -54,6 +62,7 @@ class SettingsService {
       notificationHour: prefs.getInt(_hourKey) ?? 20,
       notificationMinute: prefs.getInt(_minuteKey) ?? 0,
       notificationsEnabled: prefs.getBool(_enabledKey) ?? true,
+      maintenanceRemindersEnabled: prefs.getBool(_maintenanceKey) ?? true,
       exactAlarms: prefs.getBool(_exactKey) ?? false,
       themeMode: _themeFromName(prefs.getString(_themeKey)),
     );
@@ -64,6 +73,7 @@ class SettingsService {
     await prefs.setInt(_hourKey, settings.notificationHour);
     await prefs.setInt(_minuteKey, settings.notificationMinute);
     await prefs.setBool(_enabledKey, settings.notificationsEnabled);
+    await prefs.setBool(_maintenanceKey, settings.maintenanceRemindersEnabled);
     await prefs.setBool(_exactKey, settings.exactAlarms);
     await prefs.setString(_themeKey, settings.themeMode.name);
   }

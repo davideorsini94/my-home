@@ -23,6 +23,7 @@ import '../core/local_date.dart';
 import '../features/settings/settings_service.dart';
 import '../notifications/notification_scheduler.dart';
 import '../notifications/notification_service.dart';
+import '../notifications/maintenance_reminder_plan.dart';
 import '../notifications/reminder_plan.dart';
 
 // ---------------------------------------------------------------- foundations
@@ -264,11 +265,37 @@ class NotificationSync {
       );
     }
 
+    // Maintenance reads come from the app-wide listeners rather than one-shot
+    // queries: they are already open and current, so this costs nothing and
+    // cannot serve a stale view of what another member just recorded.
+    final maintenanceInputs = <MaintenanceReminderInput>[];
+    for (final house in houses) {
+      final maintenances =
+          _ref.read(maintenancesProvider(house.id)).value ?? const [];
+      if (maintenances.isEmpty) continue;
+      final log = _ref.read(maintenanceLogProvider(house.id)).value;
+      // A house whose ledger has not loaded yet is skipped rather than
+      // scheduled from an empty log, which would compute every maintenance as
+      // never executed and cancel its reminders.
+      if (log == null) continue;
+      maintenanceInputs.add(
+        MaintenanceReminderInput(
+          houseId: house.id,
+          houseName: house.name,
+          maintenances: maintenances,
+          log: log,
+        ),
+      );
+    }
+
     await scheduler.sync(
-      houses: inputs,
+      wasteHouses: inputs,
+      maintenanceHouses: maintenanceInputs,
       notificationHour: settings.notificationHour,
       notificationMinute: settings.notificationMinute,
-      masterEnabled: settings.notificationsEnabled,
+      wasteEnabled: settings.notificationsEnabled,
+      maintenanceEnabled:
+          settings.notificationsEnabled && settings.maintenanceRemindersEnabled,
     );
   }
 }

@@ -8,10 +8,7 @@ ThemeData buildLightTheme() => _build(Brightness.light);
 ThemeData buildDarkTheme() => _build(Brightness.dark);
 
 ThemeData _build(Brightness brightness) {
-  final scheme = ColorScheme.fromSeed(
-    seedColor: _seed,
-    brightness: brightness,
-  );
+  final scheme = ColorScheme.fromSeed(seedColor: _seed, brightness: brightness);
   return ThemeData(
     colorScheme: scheme,
     useMaterial3: true,
@@ -36,9 +33,7 @@ ThemeData _build(Brightness brightness) {
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         minimumSize: const Size(0, 48),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     ),
     inputDecorationTheme: const InputDecorationTheme(

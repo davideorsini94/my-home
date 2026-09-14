@@ -100,7 +100,8 @@ class _YearSummary extends ConsumerWidget {
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        data: (list) => _pills(context, countByType(list, LocalDate.today().year)),
+        data: (list) =>
+            _pills(context, countByType(list, LocalDate.today().year)),
       ),
     );
   }

@@ -26,7 +26,9 @@ class QuotaPolicy {
     : kind = QuotaKind.limited,
       yearlyQuota = quota;
 
-  const QuotaPolicy.unlimited() : kind = QuotaKind.unlimited, yearlyQuota = null;
+  const QuotaPolicy.unlimited()
+    : kind = QuotaKind.unlimited,
+      yearlyQuota = null;
 
   const QuotaPolicy.paid() : kind = QuotaKind.paid, yearlyQuota = null;
 
@@ -99,8 +101,7 @@ class ScheduleRule {
       weekdays: days,
       intervalWeeks: interval < 1 ? 1 : interval,
       anchorDate:
-          LocalDate.tryParse(map['anchorDate'] as String?) ??
-          LocalDate.today(),
+          LocalDate.tryParse(map['anchorDate'] as String?) ?? LocalDate.today(),
     );
   }
 
@@ -148,7 +149,9 @@ class WasteConfig {
           (map['policy'] as Map?)?.cast<String, Object?>(),
         ),
         rules: ((map['rules'] as List?) ?? const [])
-            .map((r) => ScheduleRule.fromMap((r as Map).cast<String, Object?>()))
+            .map(
+              (r) => ScheduleRule.fromMap((r as Map).cast<String, Object?>()),
+            )
             .toList(),
       );
 

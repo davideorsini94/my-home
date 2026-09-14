@@ -168,9 +168,7 @@ String _buildBody({
     buffer.write(' ');
     if (configs.length > 1) buffer.write('${config.type.label}: ');
     buffer.write(
-      configs.length > 1
-          ? _shortQuotaLine(status)
-          : status.notificationLine,
+      configs.length > 1 ? _shortQuotaLine(status) : status.notificationLine,
     );
   }
 

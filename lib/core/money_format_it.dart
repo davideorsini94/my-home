@@ -80,7 +80,8 @@ int? parseEuroCents(String raw) {
     throw FormatException('Importo non valido', raw);
   }
 
-  final cents = int.parse(units) * 100 + int.parse(decimalsPart.padRight(2, '0'));
+  final cents =
+      int.parse(units) * 100 + int.parse(decimalsPart.padRight(2, '0'));
   return cents;
 }
 

@@ -25,11 +25,7 @@ class WasteAvatar extends StatelessWidget {
         color: color,
         borderRadius: BorderRadius.circular(size / 3),
       ),
-      child: Icon(
-        type.icon,
-        size: size * 0.55,
-        color: onWasteColor(color),
-      ),
+      child: Icon(type.icon, size: size * 0.55, color: onWasteColor(color)),
     );
   }
 }

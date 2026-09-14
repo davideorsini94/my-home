@@ -31,11 +31,10 @@ class WasteConfigRepository {
 
   /// The document id is the waste type id, which keeps one configuration per
   /// type per house by construction.
-  Future<void> saveConfig(String houseId, WasteConfig config) =>
-      _refs.wasteConfigs(houseId).doc(config.type.id).set({
-        ...config.toMap(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+  Future<void> saveConfig(String houseId, WasteConfig config) => _refs
+      .wasteConfigs(houseId)
+      .doc(config.type.id)
+      .set({...config.toMap(), 'updatedAt': FieldValue.serverTimestamp()});
 
   Future<void> setEnabled(String houseId, WasteType type, bool enabled) =>
       _refs.wasteConfigs(houseId).doc(type.id).set({

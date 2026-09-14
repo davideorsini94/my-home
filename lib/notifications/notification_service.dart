@@ -7,9 +7,10 @@ import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
 import 'background_handler.dart';
+import 'notification_gateway.dart';
 
 /// Owns the notification plugin: channel setup, permissions and timezone.
-class NotificationService {
+class NotificationService implements NotificationGateway {
   NotificationService({FlutterLocalNotificationsPlugin? plugin})
     : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
@@ -19,6 +20,11 @@ class NotificationService {
   static const channelName = 'Promemoria ritiri';
   static const channelDescription =
       'Avviso la sera prima di ogni ritiro dei rifiuti';
+
+  static const maintenanceChannelId = 'maintenance_reminders';
+  static const maintenanceChannelName = 'Promemoria manutenzioni';
+  static const maintenanceChannelDescription =
+      'Avviso il giorno in cui una manutenzione della casa è in scadenza';
 
   /// Ids of the notification action buttons.
   static const markDoneActionId = 'mark_done';
@@ -33,6 +39,7 @@ class NotificationService {
   /// instead of within the system's batching window.
   bool get useExactAlarms => _useExactAlarms;
 
+  @override
   AndroidScheduleMode get scheduleMode => _useExactAlarms
       ? AndroidScheduleMode.exactAllowWhileIdle
       : AndroidScheduleMode.inexactAllowWhileIdle;
@@ -51,6 +58,21 @@ class NotificationService {
       requestBadgePermission: false,
       requestSoundPermission: false,
       notificationCategories: [
+        DarwinNotificationCategory(
+          'maintenance',
+          actions: [
+            DarwinNotificationAction.plain(
+              markDoneActionId,
+              'Eseguita',
+              options: const {DarwinNotificationActionOption.foreground},
+            ),
+            DarwinNotificationAction.plain(
+              skipActionId,
+              'Salta',
+              options: const {DarwinNotificationActionOption.foreground},
+            ),
+          ],
+        ),
         DarwinNotificationCategory(
           'pickup',
           actions: [
@@ -105,6 +127,16 @@ class NotificationService {
         channelId,
         channelName,
         description: channelDescription,
+        importance: Importance.high,
+      ),
+    );
+    // A separate channel so the user can silence maintenance reminders without
+    // losing the waste ones, from the system settings.
+    await android.createNotificationChannel(
+      const AndroidNotificationChannel(
+        maintenanceChannelId,
+        maintenanceChannelName,
+        description: maintenanceChannelDescription,
         importance: Importance.high,
       ),
     );
@@ -178,12 +210,39 @@ class NotificationService {
     return granted;
   }
 
+  @override
   void setExactAlarmsPreference(bool enabled) {
     _useExactAlarms = enabled;
   }
 
+  @override
   Future<List<PendingNotificationRequest>> pending() =>
       _plugin.pendingNotificationRequests();
+
+  @override
+  Future<void> cancel(int id) => _plugin.cancel(id: id);
+
+  @override
+  Future<void> cancelAll() => _plugin.cancelAll();
+
+  @override
+  Future<void> zonedSchedule({
+    required int id,
+    required tz.TZDateTime scheduledDate,
+    required String title,
+    required String body,
+    required String payload,
+    required AndroidScheduleMode androidScheduleMode,
+    required NotificationDetails notificationDetails,
+  }) => _plugin.zonedSchedule(
+    id: id,
+    scheduledDate: scheduledDate,
+    title: title,
+    body: body,
+    payload: payload,
+    androidScheduleMode: androidScheduleMode,
+    notificationDetails: notificationDetails,
+  );
 
   Future<NotificationAppLaunchDetails?> launchDetails() =>
       _plugin.getNotificationAppLaunchDetails();

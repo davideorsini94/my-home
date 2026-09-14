@@ -24,8 +24,9 @@ enum MaintenanceReminderSlot {
   /// Fires a week later if nothing settled it.
   followUp;
 
-  static MaintenanceReminderSlot fromId(String? id) =>
-      id == 'followUp' ? MaintenanceReminderSlot.followUp : MaintenanceReminderSlot.due;
+  static MaintenanceReminderSlot fromId(String? id) => id == 'followUp'
+      ? MaintenanceReminderSlot.followUp
+      : MaintenanceReminderSlot.due;
 }
 
 /// What a maintenance reminder carries, so its action buttons can settle the
@@ -52,23 +53,22 @@ class MaintenancePayload {
   /// [doneDateKey] is the day the button was tapped, captured before the write
   /// so that an action replayed days later still records the day it happened
   /// rather than the day it synced.
-  String encode({
-    MaintenanceEntryStatus? status,
-    String? doneDateKey,
-  }) => jsonEncode({
-    'kind': ReminderKind.maintenance.name,
-    'houseId': houseId,
-    'maintenanceId': maintenanceId,
-    'dueDateKey': dueDateKey,
-    'slot': slot.name,
-    if (status != null) 'status': status.name,
-    if (doneDateKey != null) 'doneDateKey': doneDateKey,
-  });
+  String encode({MaintenanceEntryStatus? status, String? doneDateKey}) =>
+      jsonEncode({
+        'kind': ReminderKind.maintenance.name,
+        'houseId': houseId,
+        'maintenanceId': maintenanceId,
+        'dueDateKey': dueDateKey,
+        'slot': slot.name,
+        if (status != null) 'status': status.name,
+        if (doneDateKey != null) 'doneDateKey': doneDateKey,
+      });
 
   static MaintenancePayload? decode(String? raw) {
     final map = _decodeMap(raw);
     if (map == null) return null;
-    if (ReminderKind.fromId(map['kind'] as String?) != ReminderKind.maintenance) {
+    if (ReminderKind.fromId(map['kind'] as String?) !=
+        ReminderKind.maintenance) {
       return null;
     }
     final houseId = map['houseId'] as String?;

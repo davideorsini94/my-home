@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../notifications/background_handler.dart';
 import '../notifications/foreground_handler.dart';
+import '../notifications/maintenance_payload.dart';
 import '../notifications/notification_payload.dart';
 import '../notifications/pending_actions_store.dart';
 import 'providers.dart';
@@ -58,12 +59,29 @@ class _RubbishManagerAppState extends ConsumerState<RubbishManagerApp>
   Future<void> _onResumed() async {
     final queued = await const PendingActionsStore().drain();
     for (final raw in queued) {
-      final payload = NotificationPayload.decode(raw);
-      if (payload == null) continue;
       try {
-        // The queued entry carries the outcome the user chose, so a skip
-        // replayed later stays a skip rather than becoming a collection.
-        await recordFromPayload(payload, NotificationPayload.decodeStatus(raw));
+        if (MaintenancePayload.kindOf(raw) == ReminderKind.maintenance) {
+          final payload = MaintenancePayload.decode(raw);
+          if (payload == null) continue;
+          final status = MaintenancePayload.decodeStatus(raw);
+          if (status == null) continue;
+          // The queued entry carries the day the button was pressed, so a
+          // replay days later still records when it actually happened.
+          await recordMaintenanceFromPayload(
+            payload,
+            status,
+            MaintenancePayload.decodeDoneDate(raw),
+          );
+        } else {
+          final payload = NotificationPayload.decode(raw);
+          if (payload == null) continue;
+          // The queued entry carries the outcome the user chose, so a skip
+          // replayed later stays a skip rather than becoming a collection.
+          await recordFromPayload(
+            payload,
+            NotificationPayload.decodeStatus(raw),
+          );
+        }
       } on Exception catch (e) {
         debugPrint('Replay azione notifica non riuscito: $e');
         await const PendingActionsStore().add(raw);

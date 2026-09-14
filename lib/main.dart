@@ -14,9 +14,7 @@ import 'notifications/notification_service.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Offline persistence is what makes the app usable without a network and what
   // lets a collection recorded on the doorstep sync later.

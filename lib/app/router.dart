@@ -46,7 +46,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       final auth = ref.read(authStateProvider);
       // Hold on the splash until Firebase has restored the session, otherwise
       // the login screen flashes on every cold start.
-      if (auth.isLoading) return state.matchedLocation == '/splash' ? null : '/splash';
+      if (auth.isLoading) {
+        return state.matchedLocation == '/splash' ? null : '/splash';
+      }
 
       final signedIn = auth.value != null;
       final atLogin = state.matchedLocation == '/login';
@@ -86,15 +88,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: 'edit',
-                builder: (context, state) => HouseFormScreen(
-                  houseId: state.pathParameters['houseId'],
-                ),
+                builder: (context, state) =>
+                    HouseFormScreen(houseId: state.pathParameters['houseId']),
               ),
               GoRoute(
                 path: 'members',
-                builder: (context, state) => MembersScreen(
-                  houseId: state.pathParameters['houseId']!,
-                ),
+                builder: (context, state) =>
+                    MembersScreen(houseId: state.pathParameters['houseId']!),
               ),
               // Waste used to live at /house/:houseId itself; the hub took that
               // place, so everything about it moved one level down.

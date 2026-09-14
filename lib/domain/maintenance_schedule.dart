@@ -216,11 +216,7 @@ LocalDate logLowerBound(
 ///
 /// Wedged and unreadable items sort to the top rather than the bottom: they
 /// are broken and invisible otherwise, since neither produces a due date.
-int compareForList(
-  MaintenanceStatus a,
-  MaintenanceStatus b,
-  LocalDate today,
-) {
+int compareForList(MaintenanceStatus a, MaintenanceStatus b, LocalDate today) {
   int rank(MaintenanceStatus s) {
     if (s.isWedged || s.hasUnknownRecurrence) return 0;
     if (s.isActionable(today)) return 1;

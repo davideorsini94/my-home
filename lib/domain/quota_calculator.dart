@@ -19,7 +19,8 @@ class QuotaStatus {
   /// extra bag still consumes an allowance.
   final int used;
 
-  int? get quota => policy.kind == QuotaKind.limited ? policy.yearlyQuota : null;
+  int? get quota =>
+      policy.kind == QuotaKind.limited ? policy.yearlyQuota : null;
 
   /// Free collections still available. `null` means unlimited.
   int? get remaining => switch (policy.kind) {

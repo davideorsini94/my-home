@@ -31,8 +31,14 @@ class MaintenanceAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final (background, foreground) = switch (tone) {
-      MaintenanceTone.overdue => (scheme.errorContainer, scheme.onErrorContainer),
-      MaintenanceTone.normal => (scheme.primaryContainer, scheme.onPrimaryContainer),
+      MaintenanceTone.overdue => (
+        scheme.errorContainer,
+        scheme.onErrorContainer,
+      ),
+      MaintenanceTone.normal => (
+        scheme.primaryContainer,
+        scheme.onPrimaryContainer,
+      ),
       MaintenanceTone.idle => (
         scheme.surfaceContainerHighest,
         scheme.onSurfaceVariant,
