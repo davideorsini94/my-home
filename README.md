@@ -1,14 +1,17 @@
 # Rubbish Manager
 
-App Flutter (Android + iOS) per gestire lo smaltimento dei rifiuti di casa:
-calendario dei ritiri, conteggio dei ritiri gratuiti rimasti, promemoria la sera
-prima, storico modificabile e condivisione dell'abitazione con altri familiari.
+App Flutter (Android + iOS) per gestire la casa: **smaltimento dei rifiuti** e
+**manutenzioni periodiche**, condivisi con chi ci abita.
 
 Interfaccia in italiano, codice in inglese.
 
 ---
 
 ## Cosa fa
+
+Ogni abitazione contiene due aree, scelte da una pagina iniziale.
+
+### Gestione rifiuti
 
 - **Abitazioni**: crei un'abitazione e le associ i tipi di rifiuto da monitorare
   (Indifferenziato, Carta, Plastica, Umido, Verde leggero, Vetro — solo quelli
@@ -30,9 +33,31 @@ Interfaccia in italiano, codice in inglese.
 - **Statistiche**: andamento mensile dell'anno scelto (colonne divise per tipo
   di rifiuto, toccabili per il dettaglio del mese) e confronto fra gli ultimi
   5 anni.
+
+### Manutenzioni
+
+- **Manutenzioni periodiche** della casa: caldaia, climatizzatore, fossa
+  biologica, e altre 27 categorie con la loro icona.
+- **Ricorrenza** libera: ogni N giorni, settimane, mesi o anni. La data
+  dell'ultima esecuzione può restare vuota — i promemoria partono dalla prima
+  esecuzione che registri.
+- **Promemoria** il giorno della scadenza, con un sollecito dopo una settimana
+  se nessuno la sistema. Dalla notifica puoi segnarla eseguita o saltarla.
+- **Esegui**: registra l'esecuzione a oggi e ti lascia aggiornare costo, note e
+  ricorrenza nello stesso momento.
+- **Salta**: sposta la scadenza a quella successiva senza far risultare la
+  manutenzione eseguita. Se sei molto in ritardo, le salta tutte in una volta.
+- **Chiama**: il numero di chi fa la manutenzione, salvato dentro l'app e quindi
+  visibile a tutti i membri. Si sceglie dalla rubrica o si scrive a mano.
+- **Storico** per ogni manutenzione, con costi e chi l'ha registrata,
+  modificabile ed eliminabile.
+
+### In comune
+
 - **Condivisione**: inviti un familiare con un codice a 6 caratteri e da quel
-  momento vedete gli stessi ritiri e gli stessi contatori. Non importa chi porta
-  fuori il pattume: il conteggio prosegue.
+  momento vedete gli stessi ritiri, gli stessi contatori e le stesse
+  manutenzioni. Non importa chi porta fuori il pattume o chiama il tecnico:
+  tutto prosegue.
 
 ---
 
@@ -110,6 +135,9 @@ flutterfire configure --platforms=android,ios --android-package-name=it.davideor
 
 ### 5. Pubblica le regole di sicurezza
 
+**Obbligatorio**: senza questo passaggio Firestore rifiuta ogni lettura e
+scrittura, quindi l'app mostra errori di permesso ovunque.
+
 ```bash
 firebase deploy --only firestore:rules
 ```
@@ -164,16 +192,16 @@ rsvg-convert -w 1024 -h 1024 assets/icon/icon.svg -o assets/icon/icon.png && dar
 
 ```
 lib/
-  core/            valori e utilità pure (date, catalogo rifiuti, hash id)
-  domain/          entità, motore delle ricorrenze, calcolo delle quote
+  core/            valori e utilità puri (date, cataloghi, importi, telefono)
+  domain/          entità, motori di ricorrenza, quote e scadenze
   data/            repository su Firestore e autenticazione
   notifications/   pianificazione promemoria, isolate di background
-  features/        una cartella per schermata
+  features/        una cartella per area (hub, rifiuti, manutenzioni, …)
   widgets/         componenti condivisi
 firestore.rules    regole di sicurezza multi-utente
 ```
 
-### Tre decisioni che spiegano il resto
+### Le decisioni che spiegano il resto
 
 **I contatori non sono memorizzati, sono ricavati.** Ogni raccolta è un
 documento; "quanti gratuiti restano" si calcola contando quei documenti
@@ -197,6 +225,19 @@ l'altro conferma vince l'ultima scelta invece di creare due record in conflitto.
 Non consuma quota, esclude il ritiro dalle statistiche e ferma il promemoria.
 I documenti scritti prima che il salto esistesse non hanno il campo `status` e
 vengono letti come raccolte reali, che è ciò che erano.
+
+**Le manutenzioni riusano la stessa disciplina.** La prossima scadenza non è
+memorizzata: si ricava da un registro di esecuzioni, così come i contatori dei
+rifiuti si ricavano dalle raccolte. Ne discende tutto il resto — due membri che
+premono "Esegui" lo stesso giorno contano una volta, correggere lo storico
+ricalcola le scadenze da solo, e i pulsanti della notifica sono sicuri anche
+dall'isolate di background perché nessuna scrittura deve prima leggere.
+
+Con una differenza voluta rispetto ai rifiuti: **un salto ha un id diverso da
+un'esecuzione**. Condividerlo permetterebbe a un salto che arriva il giorno
+della scadenza — il caso normale, visto che è quando arriva il promemoria — di
+sovrascrivere un'esecuzione, cancellandone il costo e riportando indietro di un
+intero periodo la data dell'ultima manutenzione.
 
 **I promemoria sono notifiche locali, non push.** Funzionano offline e non
 richiedono un server. Il testo però viene fissato quando la notifica è
@@ -255,6 +296,13 @@ due giorni aggiunge "(dati al gg/mm)" invece di dichiarare un numero come certo.
 - **Anno solare**: i ritiri gratuiti si azzerano il 1º gennaio. Se il tuo comune
   usa un periodo diverso, il punto da cambiare è
   `lib/domain/quota_calculator.dart`.
+- **Manutenzioni molto trascurate**: il registro viene caricato fino a 10 anni
+  indietro (di più per ricorrenze lunghe). Una manutenzione la cui ultima
+  esecuzione è più vecchia del limite risulta "Mai eseguita" finché non ne
+  registri una nuova. Il limite è in `logLowerBound`,
+  `lib/domain/maintenance_schedule.dart`.
+- **Un contatto per manutenzione**, nome e numero, copiati nell'app e visibili a
+  tutti i membri dell'abitazione.
 - **Storico limitato a 5 anni nell'interfaccia**: su Firestore non viene
   cancellato nulla, ma i selettori d'anno e le statistiche mostrano solo gli
   ultimi 5. Per cambiarlo, `historyYears` in `lib/domain/statistics.dart`.

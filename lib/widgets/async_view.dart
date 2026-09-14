@@ -51,7 +51,12 @@ class ErrorState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '$error',
+              _isPermissionDenied(error)
+                  // Almost always one specific cause, and one the user can fix.
+                  ? 'Permesso negato da Firestore. Se è la prima volta, '
+                        'pubblica le regole di sicurezza:\n'
+                        'firebase deploy --only firestore:rules'
+                  : '$error',
               style: theme.textTheme.bodySmall,
               textAlign: TextAlign.center,
             ),
@@ -65,6 +70,9 @@ class ErrorState extends StatelessWidget {
     );
   }
 }
+
+bool _isPermissionDenied(Object error) =>
+    error.toString().toLowerCase().contains('permission-denied');
 
 /// The friendly placeholder shown when a list has nothing in it yet.
 class EmptyState extends StatelessWidget {
