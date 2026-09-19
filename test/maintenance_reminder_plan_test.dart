@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rubbish_manager/core/fnv_hash.dart';
-import 'package:rubbish_manager/core/local_date.dart';
-import 'package:rubbish_manager/domain/entities/maintenance.dart';
-import 'package:rubbish_manager/domain/entities/maintenance_log_entry.dart';
-import 'package:rubbish_manager/notifications/maintenance_payload.dart';
-import 'package:rubbish_manager/notifications/maintenance_reminder_plan.dart';
-import 'package:rubbish_manager/notifications/notification_service.dart';
+import 'package:my_home/core/fnv_hash.dart';
+import 'package:my_home/core/local_date.dart';
+import 'package:my_home/domain/entities/maintenance.dart';
+import 'package:my_home/domain/entities/maintenance_log_entry.dart';
+import 'package:my_home/notifications/maintenance_payload.dart';
+import 'package:my_home/notifications/maintenance_reminder_plan.dart';
+import 'package:my_home/notifications/notification_service.dart';
 
 Maintenance boiler({
   String id = 'm1',

@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rubbish_manager/core/local_date.dart';
-import 'package:rubbish_manager/core/waste_catalogue.dart';
-import 'package:rubbish_manager/domain/collection_ledger.dart';
-import 'package:rubbish_manager/domain/entities/collection_event.dart';
-import 'package:rubbish_manager/domain/entities/waste_config.dart';
-import 'package:rubbish_manager/domain/quota_calculator.dart';
+import 'package:my_home/core/local_date.dart';
+import 'package:my_home/core/waste_catalogue.dart';
+import 'package:my_home/domain/collection_ledger.dart';
+import 'package:my_home/domain/entities/collection_event.dart';
+import 'package:my_home/domain/entities/waste_config.dart';
+import 'package:my_home/domain/quota_calculator.dart';
 
 /// A stand-in for the Firestore subcollection: documents keyed by id, where
 /// writing an existing id overwrites rather than appends.

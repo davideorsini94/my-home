@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rubbish_manager/core/local_date.dart';
-import 'package:rubbish_manager/domain/entities/maintenance.dart';
-import 'package:rubbish_manager/domain/recurrence_engine.dart';
+import 'package:my_home/core/local_date.dart';
+import 'package:my_home/domain/entities/maintenance.dart';
+import 'package:my_home/domain/recurrence_engine.dart';
 
 String jump(String from, int every, RecurrenceUnit unit, {int times = 1}) =>
     advance(

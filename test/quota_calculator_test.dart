@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rubbish_manager/core/local_date.dart';
-import 'package:rubbish_manager/core/waste_catalogue.dart';
-import 'package:rubbish_manager/domain/entities/collection_event.dart';
-import 'package:rubbish_manager/domain/entities/waste_config.dart';
-import 'package:rubbish_manager/domain/quota_calculator.dart';
+import 'package:my_home/core/local_date.dart';
+import 'package:my_home/core/waste_catalogue.dart';
+import 'package:my_home/domain/entities/collection_event.dart';
+import 'package:my_home/domain/entities/waste_config.dart';
+import 'package:my_home/domain/quota_calculator.dart';
 
 CollectionEvent event(
   WasteType type,

@@ -1,15 +1,15 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rubbish_manager/core/local_date.dart';
-import 'package:rubbish_manager/core/waste_catalogue.dart';
-import 'package:rubbish_manager/domain/entities/maintenance.dart';
-import 'package:rubbish_manager/domain/entities/maintenance_log_entry.dart';
-import 'package:rubbish_manager/domain/entities/waste_config.dart';
-import 'package:rubbish_manager/notifications/maintenance_reminder_plan.dart';
-import 'package:rubbish_manager/notifications/notification_gateway.dart';
-import 'package:rubbish_manager/notifications/notification_scheduler.dart';
-import 'package:rubbish_manager/notifications/notification_service.dart';
-import 'package:rubbish_manager/notifications/reminder_plan.dart';
+import 'package:my_home/core/local_date.dart';
+import 'package:my_home/core/waste_catalogue.dart';
+import 'package:my_home/domain/entities/maintenance.dart';
+import 'package:my_home/domain/entities/maintenance_log_entry.dart';
+import 'package:my_home/domain/entities/waste_config.dart';
+import 'package:my_home/notifications/maintenance_reminder_plan.dart';
+import 'package:my_home/notifications/notification_gateway.dart';
+import 'package:my_home/notifications/notification_scheduler.dart';
+import 'package:my_home/notifications/notification_service.dart';
+import 'package:my_home/notifications/reminder_plan.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 

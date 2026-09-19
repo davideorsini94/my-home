@@ -192,9 +192,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: Text('Le notifiche non arrivano?'),
                 subtitle: Text(
                   'Su alcuni telefoni (Xiaomi, Huawei, Samsung) il risparmio '
-                  'energetico blocca le app in background. Escludi Rubbish '
-                  'Manager dall\'ottimizzazione batteria nelle impostazioni '
-                  'di sistema.',
+                  'energetico blocca le app in background. Escludi MyHome '
+                  'dall\'ottimizzazione batteria nelle impostazioni di '
+                  'sistema.',
                   style: TextStyle(height: 1.4),
                 ),
                 isThreeLine: true,

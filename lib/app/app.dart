@@ -11,14 +11,14 @@ import 'providers.dart';
 import 'router.dart';
 import 'theme.dart';
 
-class RubbishManagerApp extends ConsumerStatefulWidget {
-  const RubbishManagerApp({super.key});
+class MyHomeApp extends ConsumerStatefulWidget {
+  const MyHomeApp({super.key});
 
   @override
-  ConsumerState<RubbishManagerApp> createState() => _RubbishManagerAppState();
+  ConsumerState<MyHomeApp> createState() => _MyHomeAppState();
 }
 
-class _RubbishManagerAppState extends ConsumerState<RubbishManagerApp>
+class _MyHomeAppState extends ConsumerState<MyHomeApp>
     with WidgetsBindingObserver {
   @override
   void initState() {
@@ -108,7 +108,7 @@ class _RubbishManagerAppState extends ConsumerState<RubbishManagerApp>
     ref.watch(maintenanceWatchProvider);
 
     return MaterialApp.router(
-      title: 'Rubbish Manager',
+      title: 'MyHome',
       debugShowCheckedModeBanner: false,
       routerConfig: router,
       theme: buildLightTheme(),

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rubbish_manager/core/local_date.dart';
+import 'package:my_home/core/local_date.dart';
 
 void main() {
   group('parsing and formatting', () {

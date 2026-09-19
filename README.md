@@ -1,4 +1,4 @@
-# Rubbish Manager
+# MyHome
 
 App Flutter (Android + iOS) per gestire la casa: **smaltimento dei rifiuti** e
 **manutenzioni periodiche**, condivisi con chi ci abita.
@@ -70,7 +70,9 @@ tu.
 ### 1. Crea il progetto Firebase
 
 1. Vai su <https://console.firebase.google.com> → **Aggiungi progetto**.
-2. Nome: `rubbish-manager` (o quello che preferisci).
+2. Nome: `my-home` (o quello che preferisci). L'id di un progetto Firebase
+   non è rinominabile: questa installazione continua a chiamarsi
+   `rubbish-manager`, com'era prima del cambio di nome dell'app.
 3. Google Analytics: **disattiva**, non serve.
 4. Resta sul piano **Spark (gratuito)**: l'app è progettata per non richiedere
    Cloud Functions.
@@ -103,6 +105,13 @@ dart pub global activate flutterfire_cli
 ```bash
 flutterfire configure --platforms=android,ios --android-package-name=it.davideorsini.rubbish_manager
 ```
+
+Il package Android resta `it.davideorsini.rubbish_manager` anche dopo il
+cambio di nome: è l'identità con cui l'app è registrata su Firebase e sul
+client OAuth di Google. Cambiarlo significa registrare una nuova app, un
+nuovo `google-services.json` e un nuovo client di accesso, e sul telefono
+si installerebbe accanto alla vecchia invece che sopra.
+
 
 Questo genera `lib/firebase_options.dart` e scarica
 `android/app/google-services.json`.

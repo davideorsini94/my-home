@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rubbish_manager/core/local_date.dart';
-import 'package:rubbish_manager/core/waste_catalogue.dart';
-import 'package:rubbish_manager/domain/entities/collection_event.dart';
-import 'package:rubbish_manager/domain/statistics.dart';
+import 'package:my_home/core/local_date.dart';
+import 'package:my_home/core/waste_catalogue.dart';
+import 'package:my_home/domain/entities/collection_event.dart';
+import 'package:my_home/domain/statistics.dart';
 
 CollectionEvent event(WasteType type, String date) => CollectionEvent(
   id: CollectionEvent.scheduledId(type, LocalDate.parse(date)),

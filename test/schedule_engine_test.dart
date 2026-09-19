@@ -1,10 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rubbish_manager/core/local_date.dart';
-import 'package:rubbish_manager/core/waste_catalogue.dart';
-import 'package:rubbish_manager/domain/entities/waste_config.dart';
-import 'package:rubbish_manager/domain/schedule_engine.dart';
+import 'package:my_home/core/local_date.dart';
+import 'package:my_home/core/waste_catalogue.dart';
+import 'package:my_home/domain/entities/waste_config.dart';
+import 'package:my_home/domain/schedule_engine.dart';
 
 ScheduleRule rule({
   required Set<int> weekdays,

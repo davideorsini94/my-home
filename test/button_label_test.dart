@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rubbish_manager/app/theme.dart';
-import 'package:rubbish_manager/widgets/button_label.dart';
+import 'package:my_home/app/theme.dart';
+import 'package:my_home/widgets/button_label.dart';
 
 /// The maintenance card's action row: three buttons sharing a card that is
 /// itself inset inside a 360dp-wide phone.

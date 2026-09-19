@@ -48,7 +48,7 @@ Future<void> main() async {
         initialSettingsProvider.overrideWithValue(settings),
         notificationServiceProvider.overrideWithValue(notificationService),
       ],
-      child: const RubbishManagerApp(),
+      child: const MyHomeApp(),
     ),
   );
 }

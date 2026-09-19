@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// Rubbish Manager — security rules.
+// MyHome — security rules.
 //
 // Model: every house document carries its own `members` map, so membership on
 // the house itself is checked from `resource.data` at zero read cost, and

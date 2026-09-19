@@ -43,7 +43,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const _BinCluster(),
                 const SizedBox(height: 32),
                 Text(
-                  'Rubbish Manager',
+                  'MyHome',
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),

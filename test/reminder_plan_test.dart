@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rubbish_manager/core/fnv_hash.dart';
-import 'package:rubbish_manager/core/local_date.dart';
-import 'package:rubbish_manager/core/waste_catalogue.dart';
-import 'package:rubbish_manager/domain/entities/collection_event.dart';
-import 'package:rubbish_manager/domain/entities/waste_config.dart';
-import 'package:rubbish_manager/notifications/notification_payload.dart';
-import 'package:rubbish_manager/notifications/reminder_plan.dart';
+import 'package:my_home/core/fnv_hash.dart';
+import 'package:my_home/core/local_date.dart';
+import 'package:my_home/core/waste_catalogue.dart';
+import 'package:my_home/domain/entities/collection_event.dart';
+import 'package:my_home/domain/entities/waste_config.dart';
+import 'package:my_home/notifications/notification_payload.dart';
+import 'package:my_home/notifications/reminder_plan.dart';
 
 WasteConfig config(
   WasteType type, {

@@ -298,7 +298,7 @@ class _MembersScreenState extends ConsumerState<MembersScreen> {
                                     ShareParams(
                                       text:
                                           'Unisciti a «${house.name}» su '
-                                          'Rubbish Manager con il codice $code',
+                                          'MyHome con il codice $code',
                                     ),
                                   ),
                                   icon: const Icon(Icons.share, size: 18),
