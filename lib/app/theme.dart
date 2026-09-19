@@ -4,6 +4,8 @@ import '../core/waste_catalogue.dart';
 
 const _seed = Color(0xFF00796B);
 
+const _buttonPadding = EdgeInsets.symmetric(horizontal: 16);
+
 ThemeData buildLightTheme() => _build(Brightness.light);
 ThemeData buildDarkTheme() => _build(Brightness.dark);
 
@@ -30,9 +32,33 @@ ThemeData _build(Brightness brightness) {
     listTileTheme: const ListTileThemeData(
       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
     ),
+    // The horizontal padding is tighter than the Material default of 24 on
+    // each side: half of these buttons sit two or three to a row inside a card,
+    // where 48 points of padding is most of the width a label has to live in.
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         minimumSize: const Size(0, 48),
+        padding: _buttonPadding,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(0, 48),
+        padding: _buttonPadding,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        minimumSize: const Size(0, 48),
+        padding: _buttonPadding,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     ),

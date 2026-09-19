@@ -99,7 +99,7 @@ List<MaintenanceReminderPlan> buildMaintenanceReminderPlans({
             slot: slot,
             fireAt: fireAt,
             title: _title(slot, house.houseName),
-            body: _body(slot, maintenance, status, due),
+            body: _body(slot, maintenance, status, due, fireDate),
             payload: MaintenancePayload(
               houseId: house.houseId,
               maintenanceId: maintenance.id,
@@ -135,12 +135,16 @@ String _body(
   Maintenance maintenance,
   MaintenanceStatus status,
   LocalDate due,
+  // The reader sees this text on the day it fires, so that is the year the
+  // dates are read against: a maintenance every three years would otherwise
+  // say "ultima esecuzione: mar 15 set" and look a week old.
+  LocalDate readOn,
 ) {
   if (slot == MaintenanceReminderSlot.followUp) {
     // "o dalla notifica" matters: this nudge exists precisely for the case
     // where someone settled it from the shade with the app closed, which no
     // sync has had a chance to notice yet.
-    return '«${maintenance.name}» era prevista il ${formatShort(due)}. '
+    return '«${maintenance.name}» era prevista il ${formatShortInContext(due, readOn)}. '
         'Se l\'hai già eseguita o saltata dall\'app o dalla notifica, '
         'ignora questo avviso.';
   }
@@ -154,7 +158,9 @@ String _body(
 
   final lastDone = status.lastDone;
   if (lastDone != null) {
-    buffer.write(' Ultima esecuzione: ${formatShort(lastDone)}.');
+    buffer.write(
+      ' Ultima esecuzione: ${formatShortInContext(lastDone, readOn)}.',
+    );
   }
 
   final contact = maintenance.contact;

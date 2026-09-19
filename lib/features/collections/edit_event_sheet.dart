@@ -7,6 +7,7 @@ import '../../core/local_date.dart';
 import '../../core/waste_catalogue.dart';
 import '../../domain/entities/collection_event.dart';
 import '../../widgets/app_sheet.dart';
+import '../../widgets/button_label.dart';
 import '../../widgets/async_view.dart';
 
 Future<void> showEditEventSheet(
@@ -280,14 +281,14 @@ class _EditEventSheetState extends ConsumerState<_EditEventSheet> {
                       minimumSize: const Size(0, 48),
                     ),
                     icon: const Icon(Icons.delete_outline),
-                    label: const Text('Elimina'),
+                    label: const ButtonLabel('Elimina'),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton(
                     onPressed: _busy ? null : _save,
-                    child: Text(_busy ? 'Salvataggio…' : 'Salva'),
+                    child: ButtonLabel(_busy ? 'Salvataggio…' : 'Salva'),
                   ),
                 ),
               ],

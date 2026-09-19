@@ -13,6 +13,7 @@ import '../../domain/entities/maintenance_log_entry.dart';
 import '../../domain/maintenance_schedule.dart';
 import '../../notifications/permission_prompt.dart';
 import '../../widgets/async_view.dart';
+import '../../widgets/button_label.dart';
 import '../../widgets/maintenance_avatar.dart';
 import 'contact_field.dart';
 import 'icon_picker_sheet.dart';
@@ -219,7 +220,7 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
                         if (picked != null) setState(() => _iconKey = picked);
                       },
                       icon: const Icon(Icons.palette_outlined, size: 18),
-                      label: Text(maintenanceIconLabel(_iconKey)),
+                      label: ButtonLabel(maintenanceIconLabel(_iconKey)),
                     ),
                   ),
                 ],

@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../app/providers.dart';
 import '../../domain/entities/house.dart';
 import '../../widgets/async_view.dart';
+import '../../widgets/button_label.dart';
 
 /// Who shares this house, and how to invite someone else.
 class MembersScreen extends ConsumerStatefulWidget {
@@ -251,7 +252,7 @@ class _MembersScreenState extends ConsumerState<MembersScreen> {
                                 ? null
                                 : () => _generateInvite(house),
                             icon: const Icon(Icons.qr_code_2),
-                            label: const Text('Genera codice di invito'),
+                            label: const ButtonLabel('Genera codice di invito'),
                           ),
                         ],
                       ),
@@ -287,7 +288,7 @@ class _MembersScreenState extends ConsumerState<MembersScreen> {
                                     }
                                   },
                                   icon: const Icon(Icons.copy, size: 18),
-                                  label: const Text('Copia'),
+                                  label: const ButtonLabel('Copia'),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -301,7 +302,7 @@ class _MembersScreenState extends ConsumerState<MembersScreen> {
                                     ),
                                   ),
                                   icon: const Icon(Icons.share, size: 18),
-                                  label: const Text('Condividi'),
+                                  label: const ButtonLabel('Condividi'),
                                 ),
                               ),
                             ],
@@ -327,7 +328,7 @@ class _MembersScreenState extends ConsumerState<MembersScreen> {
                       minimumSize: const Size(0, 48),
                     ),
                     icon: const Icon(Icons.delete_forever_outlined),
-                    label: const Text('Elimina abitazione'),
+                    label: const ButtonLabel('Elimina abitazione'),
                   ),
                   const SizedBox(height: 8),
                   Text(

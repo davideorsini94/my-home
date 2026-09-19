@@ -194,14 +194,19 @@ class _YearDetail extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        breakdown.total == 1
-                            ? 'raccolta nel ${breakdown.year}'
-                            : 'raccolte nel ${breakdown.year}',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                    // Flexible because a large system font size grows both the
+                    // headline figure and the wording beside it, and together
+                    // they outgrow the card.
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          breakdown.total == 1
+                              ? 'raccolta nel ${breakdown.year}'
+                              : 'raccolte nel ${breakdown.year}',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                     ),

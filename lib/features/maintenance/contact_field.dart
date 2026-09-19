@@ -4,6 +4,7 @@ import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart
 import '../../core/phone_number.dart';
 import '../../domain/entities/maintenance.dart';
 import '../../widgets/app_sheet.dart';
+import '../../widgets/button_label.dart';
 import '../../widgets/async_view.dart';
 
 /// Name and phone number of whoever performs the maintenance.
@@ -168,7 +169,7 @@ class _ContactFieldState extends State<ContactField> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.contacts_outlined, size: 18),
-                    label: const Text('Dalla rubrica'),
+                    label: const ButtonLabel('Dalla rubrica'),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -176,7 +177,7 @@ class _ContactFieldState extends State<ContactField> {
                   child: OutlinedButton.icon(
                     onPressed: _editManually,
                     icon: const Icon(Icons.keyboard_outlined, size: 18),
-                    label: const Text('A mano'),
+                    label: const ButtonLabel('A mano'),
                   ),
                 ),
               ],

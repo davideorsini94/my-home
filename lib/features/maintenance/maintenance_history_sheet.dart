@@ -9,6 +9,7 @@ import '../../core/money_format_it.dart';
 import '../../domain/entities/maintenance.dart';
 import '../../domain/entities/maintenance_log_entry.dart';
 import '../../widgets/app_sheet.dart';
+import '../../widgets/button_label.dart';
 import '../../widgets/async_view.dart';
 
 /// Every execution and skip recorded for one maintenance.
@@ -359,14 +360,14 @@ class _EditEntrySheetState extends ConsumerState<_EditEntrySheet> {
                       minimumSize: const Size(0, 48),
                     ),
                     icon: const Icon(Icons.delete_outline),
-                    label: const Text('Elimina'),
+                    label: const ButtonLabel('Elimina'),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton(
                     onPressed: _busy ? null : _save,
-                    child: Text(_busy ? 'Salvataggio…' : 'Salva'),
+                    child: ButtonLabel(_busy ? 'Salvataggio…' : 'Salva'),
                   ),
                 ),
               ],

@@ -53,6 +53,16 @@ String monthLong(int month) => _monthLong[month - 1];
 String formatShort(LocalDate date) =>
     '${weekdayShort(date.weekday)} ${date.day} ${_monthShort[date.month - 1]}';
 
+/// "mer 19 ago" within [reference]'s year, "mer 19 ago 2028" outside it.
+///
+/// A waste pickup is always a few days away, so its year would be noise; a
+/// maintenance due "ogni 2 anni" is not, and a bare "ven 15 set" for a date in
+/// 2028 reads as this September.
+String formatShortInContext(LocalDate date, LocalDate reference) =>
+    date.year == reference.year
+    ? formatShort(date)
+    : '${formatShort(date)} ${date.year}';
+
 /// "mercoledì 19 agosto 2026"
 String formatLong(LocalDate date) =>
     '${weekdayLong(date.weekday)} ${date.day} ${monthLong(date.month)} ${date.year}';
@@ -77,7 +87,7 @@ String formatRelative(LocalDate date, LocalDate today) {
     1 => 'domani',
     -1 => 'ieri',
     > 1 && < 7 => weekdayLong(date.weekday),
-    _ => formatShort(date),
+    _ => formatShortInContext(date, today),
   };
 }
 

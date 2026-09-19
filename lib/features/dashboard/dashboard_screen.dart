@@ -12,6 +12,7 @@ import '../../domain/entities/waste_config.dart';
 import '../../domain/quota_calculator.dart';
 import '../../domain/schedule_engine.dart';
 import '../../widgets/async_view.dart';
+import '../../widgets/button_label.dart';
 import '../../widgets/waste_badges.dart';
 import '../collections/record_extra_sheet.dart';
 
@@ -438,7 +439,7 @@ class _PickupCardState extends ConsumerState<_PickupCard> {
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(0, 40),
                       ),
-                      child: const Text('Salta'),
+                      child: const ButtonLabel('Salta'),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -448,7 +449,7 @@ class _PickupCardState extends ConsumerState<_PickupCard> {
                       style: FilledButton.styleFrom(
                         minimumSize: const Size(0, 40),
                       ),
-                      child: const Text('Raccolta fatta'),
+                      child: const ButtonLabel('Raccolta fatta'),
                     ),
                   ),
                 ],

@@ -9,6 +9,7 @@ import '../../core/money_format_it.dart';
 import '../../domain/entities/maintenance.dart';
 import '../../domain/maintenance_schedule.dart';
 import '../../widgets/async_view.dart';
+import '../../widgets/button_label.dart';
 import '../../widgets/maintenance_avatar.dart';
 import 'maintenance_actions.dart';
 import 'maintenance_history_sheet.dart';
@@ -227,7 +228,7 @@ class _MaintenanceCard extends ConsumerWidget {
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size(0, 40),
                     ),
-                    child: const Text('Modifica'),
+                    child: const ButtonLabel('Modifica'),
                   ),
                 ),
                 // Skipping is only meaningful when there is a due date to move.
@@ -244,7 +245,7 @@ class _MaintenanceCard extends ConsumerWidget {
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(0, 40),
                       ),
-                      child: const Text('Salta'),
+                      child: const ButtonLabel('Salta'),
                     ),
                   ),
                 ],
@@ -259,7 +260,7 @@ class _MaintenanceCard extends ConsumerWidget {
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(0, 40),
                     ),
-                    child: const Text('Esegui'),
+                    child: const ButtonLabel('Esegui'),
                   ),
                 ),
               ],
@@ -318,18 +319,18 @@ class _StatusLine extends StatelessWidget {
       final days = due.daysUntil(today);
       return (
         'In ritardo di ${days == 1 ? '1 giorno' : '$days giorni'} '
-            '· ultima: ${formatShort(last)}',
+            '· ultima: ${formatShortInContext(last, today)}',
         theme.colorScheme.error,
       );
     }
     if (due == today) {
       return (
-        'Da fare oggi · ultima: ${formatShort(last)}',
+        'Da fare oggi · ultima: ${formatShortInContext(last, today)}',
         theme.colorScheme.error,
       );
     }
     return (
-      'Prossima: ${formatRelative(due, today)} · ultima: ${formatShort(last)}',
+      'Prossima: ${formatRelative(due, today)} · ultima: ${formatShortInContext(last, today)}',
       null,
     );
   }
