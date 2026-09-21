@@ -152,6 +152,12 @@ class NotificationService implements NotificationGateway {
   }
 
   /// Whether the OS currently lets the app post notifications.
+  ///
+  /// iOS needs the same question asked as Android: authorization starts out
+  /// undetermined and every scheduled notification is dropped in silence until
+  /// the user grants it. Answering a blanket `true` here short-circuited
+  /// [ensureNotificationPermission], so the grant was never requested and no
+  /// reminder ever arrived on an iPhone.
   Future<bool> areNotificationsEnabled() async {
     if (Platform.isAndroid) {
       final android = _plugin
@@ -160,7 +166,15 @@ class NotificationService implements NotificationGateway {
           >();
       return await android?.areNotificationsEnabled() ?? false;
     }
-    return true;
+    final darwin = _plugin
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
+    final permissions = await darwin?.checkPermissions();
+    if (permissions == null) return false;
+    // Provisional counts: those notifications land quietly in the shade rather
+    // than not at all.
+    return permissions.isEnabled || permissions.isProvisionalEnabled;
   }
 
   /// Asks for the POST_NOTIFICATIONS runtime permission (Android 13+) or the

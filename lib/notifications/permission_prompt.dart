@@ -7,10 +7,11 @@ import '../widgets/async_view.dart';
 /// Asks for notification permission at the first moment it actually means
 /// something to the user — right after they set up a pickup schedule.
 ///
-/// Android 13+ will not post anything without this grant, and it is never
-/// requested implicitly: without an explicit prompt the reminders would simply
-/// never appear, with nothing on screen to explain why. Asking at app launch
-/// instead would be a permission dialog before the user knows what it is for.
+/// Neither Android 13+ nor iOS posts anything without this grant, and neither
+/// requests it implicitly: without an explicit prompt the reminders would
+/// simply never appear, with nothing on screen to explain why. Asking at app
+/// launch instead would be a permission dialog before the user knows what it is
+/// for.
 ///
 /// Returns true when the app may post notifications.
 Future<bool> ensureNotificationPermission(
@@ -52,8 +53,8 @@ Future<bool> ensureNotificationPermission(
   final granted = await service.areNotificationsEnabled();
 
   if (!granted && context.mounted) {
-    // Android stops showing the system dialog after two refusals, so pointing
-    // at the settings is the only remaining route.
+    // Android stops showing the system dialog after two refusals and iOS after
+    // the first, so pointing at the settings is the only remaining route.
     showMessage(
       context,
       'Permesso non concesso. Puoi attivarlo dalle impostazioni di sistema '
