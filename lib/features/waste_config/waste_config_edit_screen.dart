@@ -151,59 +151,59 @@ class _WasteConfigEditScreenState extends ConsumerState<WasteConfigEditScreen> {
 
             _SectionTitle('Ritiri gratuiti'),
             Card(
-              child: Column(
-                children: [
-                  RadioListTile<QuotaKind>(
-                    value: QuotaKind.limited,
-                    groupValue: _kind,
-                    title: const Text('Numero limitato all\'anno'),
-                    subtitle: const Text(
-                      'Oltre il limite i ritiri sono a pagamento',
-                    ),
-                    onChanged: (v) => setState(() => _kind = v!),
-                  ),
-                  if (_kind == QuotaKind.limited)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              '$_quota ritiri gratuiti all\'anno',
-                              style: theme.textTheme.bodyMedium,
-                            ),
-                          ),
-                          IconButton.filledTonal(
-                            onPressed: _quota > 1
-                                ? () => setState(() => _quota--)
-                                : null,
-                            icon: const Icon(Icons.remove),
-                          ),
-                          const SizedBox(width: 8),
-                          IconButton.filledTonal(
-                            onPressed: _quota < 500
-                                ? () => setState(() => _quota++)
-                                : null,
-                            icon: const Icon(Icons.add),
-                          ),
-                        ],
+              // The group value and the callback live on the RadioGroup now;
+              // the tiles only carry their own value.
+              child: RadioGroup<QuotaKind>(
+                groupValue: _kind,
+                onChanged: (v) => setState(() => _kind = v!),
+                child: Column(
+                  children: [
+                    RadioListTile<QuotaKind>(
+                      value: QuotaKind.limited,
+                      title: const Text('Numero limitato all\'anno'),
+                      subtitle: const Text(
+                        'Oltre il limite i ritiri sono a pagamento',
                       ),
                     ),
-                  RadioListTile<QuotaKind>(
-                    value: QuotaKind.unlimited,
-                    groupValue: _kind,
-                    title: const Text('Illimitati'),
-                    subtitle: const Text('Nessun limite, sempre gratuiti'),
-                    onChanged: (v) => setState(() => _kind = v!),
-                  ),
-                  RadioListTile<QuotaKind>(
-                    value: QuotaKind.paid,
-                    groupValue: _kind,
-                    title: const Text('Tutti a pagamento'),
-                    subtitle: const Text('Nessun ritiro gratuito'),
-                    onChanged: (v) => setState(() => _kind = v!),
-                  ),
-                ],
+                    if (_kind == QuotaKind.limited)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '$_quota ritiri gratuiti all\'anno',
+                                style: theme.textTheme.bodyMedium,
+                              ),
+                            ),
+                            IconButton.filledTonal(
+                              onPressed: _quota > 1
+                                  ? () => setState(() => _quota--)
+                                  : null,
+                              icon: const Icon(Icons.remove),
+                            ),
+                            const SizedBox(width: 8),
+                            IconButton.filledTonal(
+                              onPressed: _quota < 500
+                                  ? () => setState(() => _quota++)
+                                  : null,
+                              icon: const Icon(Icons.add),
+                            ),
+                          ],
+                        ),
+                      ),
+                    RadioListTile<QuotaKind>(
+                      value: QuotaKind.unlimited,
+                      title: const Text('Illimitati'),
+                      subtitle: const Text('Nessun limite, sempre gratuiti'),
+                    ),
+                    RadioListTile<QuotaKind>(
+                      value: QuotaKind.paid,
+                      title: const Text('Tutti a pagamento'),
+                      subtitle: const Text('Nessun ritiro gratuito'),
+                    ),
+                  ],
+                ),
               ),
             ),
 
@@ -244,7 +244,7 @@ class _WasteConfigEditScreenState extends ConsumerState<WasteConfigEditScreen> {
                     Text('Frequenza', style: theme.textTheme.labelLarge),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<int>(
-                      value: _intervalWeeks,
+                      initialValue: _intervalWeeks,
                       // Without this the field sizes itself to its widest item
                       // and overflows the card on narrow screens.
                       isExpanded: true,

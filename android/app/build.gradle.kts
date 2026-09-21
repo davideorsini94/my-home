@@ -27,8 +27,10 @@ android {
 
     defaultConfig {
         applicationId = "it.davideorsini.rubbish_manager"
-        // Firebase Auth requires API 23 or newer.
-        minSdk = 23
+        // Firebase Auth requires API 23 or newer. Kept explicit rather than
+        // following flutter.minSdkVersion, which is 24 and would drop Android
+        // 6 for no reason of ours.
+        minSdk = flutter.minSdkVersion
         targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName

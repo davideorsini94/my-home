@@ -201,7 +201,7 @@ class _ExecuteSheetState extends ConsumerState<_ExecuteSheet> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: DropdownButtonFormField<RecurrenceUnit>(
-                    value: _unit,
+                    initialValue: _unit,
                     isExpanded: true,
                     decoration: const InputDecoration(labelText: 'Unità'),
                     items: [

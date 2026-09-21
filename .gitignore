@@ -48,3 +48,9 @@ app.*.map.json
 /android/app/google-services.json
 /ios/Runner/GoogleService-Info.plist
 /lib/firebase_options.dart
+
+# The signing identity belongs to whoever builds this, not to the project.
+ios/Flutter/Signing.xcconfig
+
+# AGP 8.11 writes here.
+android/build/
