@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/design.dart';
 import '../../app/providers.dart';
 import '../../widgets/async_view.dart';
 import 'settings_service.dart';
@@ -103,7 +104,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final notifier = ref.read(settingsProvider.notifier);
     final user = ref.watch(currentUserProvider);
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(
         title: const Text('Impostazioni'),
         leading: IconButton(
@@ -111,9 +112,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           onPressed: () => context.go('/'),
         ),
       ),
-      body: SafeArea(
+      body: (context) => SafeArea(
         top: false,
         child: ListView(
+          // Rows run edge to edge, so only the vertical inset comes from here;
+          // the horizontal one belongs to each ListTile.
+          padding: glassListPadding(context, horizontal: 0),
           children: [
             if (_osNotificationsEnabled == false)
               Card(
@@ -233,6 +237,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
             ),
+            _TextSizeTile(
+              selected: settings.textSize,
+              onChanged: (size) =>
+                  notifier.update(settings.copyWith(textSize: size)),
+            ),
 
             const Divider(),
             _SectionHeader('Account'),
@@ -273,12 +282,78 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
     child: Text(
-      text.toUpperCase(),
-      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+      // Title case rather than the row of capitals this used to be: section
+      // headers are read as words, and the refreshed list metrics drop the
+      // all-caps convention everywhere in the system.
+      text,
+      style: Theme.of(context).textTheme.titleSmall?.copyWith(
         color: Theme.of(context).colorScheme.primary,
         fontWeight: FontWeight.bold,
-        letterSpacing: 1.2,
       ),
     ),
   );
+}
+
+/// Picks how large text and numbers are drawn.
+///
+/// Laid out as a full-width row of its own rather than squeezed into a
+/// [ListTile]'s trailing slot, because the three labels have to stay readable
+/// at the very size the control is setting — and at "Grande" with a system
+/// scale already turned up, a trailing segmented button has nowhere to go.
+class _TextSizeTile extends StatelessWidget {
+  const _TextSizeTile({required this.selected, required this.onChanged});
+
+  final AppTextSize selected;
+  final ValueChanged<AppTextSize> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 8, 18, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.format_size,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 18),
+              Expanded(
+                child: Text(
+                  'Dimensione del testo',
+                  style: theme.textTheme.bodyLarge,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<AppTextSize>(
+              segments: [
+                for (final size in AppTextSize.values)
+                  ButtonSegment(value: size, label: Text(size.label)),
+              ],
+              selected: {selected},
+              showSelectedIcon: false,
+              onSelectionChanged: (selection) => onChanged(selection.first),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Si somma alla dimensione impostata nel sistema, non la '
+            'sostituisce: se l\'hai già ingrandita lì, questa la sposta '
+            'ancora.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

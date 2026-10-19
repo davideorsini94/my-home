@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/design.dart';
 import '../../app/providers.dart';
 import '../../core/date_format_it.dart';
 import '../../core/local_date.dart';
@@ -25,7 +26,7 @@ class HouseHubScreen extends ConsumerWidget {
     final house = ref.watch(houseProvider(houseId));
     final theme = Theme.of(context);
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(
         title: Text(house.value?.name ?? 'Abitazione'),
         leading: IconButton(
@@ -54,10 +55,10 @@ class HouseHubScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: SafeArea(
+      body: (context) => SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          padding: glassListPadding(context),
           children: [
             Text(
               'Cosa vuoi gestire?',
@@ -113,7 +114,7 @@ class _SectionCard extends StatelessWidget {
 
     return Card(
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.all(AppRadius.card),
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -123,18 +124,24 @@ class _SectionCard extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 44,
-                    height: 44,
+                    width: 54,
+                    height: 54,
                     decoration: BoxDecoration(
                       color: theme.colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(
+                        AppRadius.concentric(
+                          AppRadius.card,
+                          AppSpacing.cardPadding,
+                        ),
+                      ),
                     ),
                     child: Icon(
                       icon,
+                      size: 30,
                       color: theme.colorScheme.onPrimaryContainer,
                     ),
                   ),
-                  const SizedBox(width: 14),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Text(
                       title,

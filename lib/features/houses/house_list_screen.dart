@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/design.dart';
 import '../../app/providers.dart';
 import '../../core/date_format_it.dart';
 import '../../core/local_date.dart';
@@ -11,6 +12,7 @@ import '../../domain/entities/waste_config.dart';
 import '../../domain/quota_calculator.dart';
 import '../../domain/schedule_engine.dart';
 import '../../widgets/async_view.dart';
+import '../../widgets/waste_badges.dart';
 
 class HouseListScreen extends ConsumerWidget {
   const HouseListScreen({super.key});
@@ -19,7 +21,7 @@ class HouseListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final houses = ref.watch(myHousesProvider);
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(
         title: const Text('Le mie abitazioni'),
         actions: [
@@ -40,7 +42,7 @@ class HouseListScreen extends ConsumerWidget {
         icon: const Icon(Icons.add_home_outlined),
         label: const Text('Nuova abitazione'),
       ),
-      body: SafeArea(
+      body: (context) => SafeArea(
         top: false,
         child: AsyncView(
           value: houses,
@@ -62,9 +64,13 @@ class HouseListScreen extends ConsumerWidget {
             }
 
             return ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+              // The bottom inset clears the extended floating button, which
+              // sits in the same floating layer as the bar and would otherwise
+              // cover the last card.
+              padding: glassListPadding(context, bottom: 104),
               itemCount: list.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
+              separatorBuilder: (_, _) =>
+                  const SizedBox(height: AppSpacing.rowGap),
               itemBuilder: (context, index) => _HouseCard(house: list[index]),
             );
           },
@@ -74,7 +80,7 @@ class HouseListScreen extends ConsumerWidget {
   }
 }
 
-/// Per-type collection counts for the current year, as coloured pills.
+/// Per-type collection counts for the current year, as coloured tiles.
 ///
 /// Reads the same year ledger the dashboard uses, so the number here and the
 /// number inside the house can never disagree.
@@ -93,68 +99,29 @@ class _YearSummary extends ConsumerWidget {
       duration: const Duration(milliseconds: 150),
       alignment: Alignment.topLeft,
       child: events.when(
-        loading: () => _pills(context, null),
+        loading: () => _tiles(null),
         error: (_, _) => Text(
           'Conteggi non disponibili',
-          style: theme.textTheme.bodySmall?.copyWith(
+          style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        data: (list) =>
-            _pills(context, countByType(list, LocalDate.today().year)),
+        data: (list) => _tiles(countByType(list, LocalDate.today().year)),
       ),
     );
   }
 
-  Widget _pills(BuildContext context, Map<WasteType, int>? counts) => Wrap(
-    spacing: 8,
-    runSpacing: 8,
+  Widget _tiles(Map<WasteType, int>? counts) => Wrap(
+    spacing: 10,
+    runSpacing: 10,
     children: [
       for (final config in configs)
-        _CountPill(
+        WasteCountTile(
           type: config.type,
-          // Null while loading, so the pill shows a placeholder rather than a
-          // zero that would briefly read as "nothing collected".
           count: counts?[config.type] ?? (counts == null ? null : 0),
         ),
     ],
   );
-}
-
-class _CountPill extends StatelessWidget {
-  const _CountPill({required this.type, required this.count});
-
-  final WasteType type;
-  final int? count;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final color = type.colorFor(theme.brightness);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.45)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(type.icon, size: 15, color: color),
-          const SizedBox(width: 5),
-          Text(
-            count?.toString() ?? '–',
-            style: theme.textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.onSurface,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _HouseCard extends ConsumerWidget {
@@ -180,10 +147,10 @@ class _HouseCard extends ConsumerWidget {
 
     return Card(
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.all(AppRadius.card),
         onTap: () => context.go('/house/${house.id}'),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.cardPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -192,7 +159,7 @@ class _HouseCard extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       house.name,
-                      style: theme.textTheme.titleMedium?.copyWith(
+                      style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -208,44 +175,45 @@ class _HouseCard extends ConsumerWidget {
                 house.members.length == 1
                     ? 'Solo tu'
                     : '${house.members.length} membri',
-                style: theme.textTheme.bodySmall?.copyWith(
+                style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               if (enabled.isEmpty)
                 Text(
                   'Nessun rifiuto monitorato',
-                  style: theme.textTheme.bodySmall?.copyWith(
+                  style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                 )
               else ...[
+                // Title case, not the small caps this used to be: section
+                // headers read as words rather than as a row of capitals.
                 Text(
                   'Raccolte ${today.year}',
-                  style: theme.textTheme.labelSmall?.copyWith(
+                  style: theme.textTheme.labelLarge?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
-                    letterSpacing: 0.6,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 _YearSummary(houseId: house.id, configs: enabled),
                 if (upcoming.isNotEmpty) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   Row(
                     children: [
                       Icon(
                         Icons.event_outlined,
-                        size: 15,
+                        size: 18,
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Prossimo ritiro: ${upcoming.first.$1.label} '
                           '${formatRelative(upcoming.first.$2, today)}',
-                          style: theme.textTheme.bodySmall,
+                          style: theme.textTheme.bodyMedium,
                         ),
                       ),
                     ],

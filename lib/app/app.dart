@@ -93,7 +93,7 @@ class _MyHomeAppState extends ConsumerState<MyHomeApp>
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
-    final themeMode = ref.watch(settingsProvider).themeMode;
+    final settings = ref.watch(settingsProvider);
 
     // Any change to the set of houses changes which reminders are wanted.
     ref.listen(myHousesProvider, (_, _) {
@@ -113,7 +113,22 @@ class _MyHomeAppState extends ConsumerState<MyHomeApp>
       routerConfig: router,
       theme: buildLightTheme(),
       darkTheme: buildDarkTheme(),
-      themeMode: themeMode,
+      themeMode: settings.themeMode,
+      // Applied here rather than inside the themes so it reaches every piece of
+      // text in one place, including the ones drawn by Flutter's own dialogs
+      // and pickers.
+      builder: (context, child) {
+        final media = MediaQuery.of(context);
+        return MediaQuery(
+          data: media.copyWith(
+            textScaler: _PreferredTextScaler(
+              media.textScaler,
+              settings.textSize.scale,
+            ),
+          ),
+          child: child!,
+        );
+      },
       locale: const Locale('it'),
       supportedLocales: const [Locale('it')],
       localizationsDelegates: const [
@@ -123,4 +138,27 @@ class _MyHomeAppState extends ConsumerState<MyHomeApp>
       ],
     );
   }
+}
+
+/// The chosen text size, multiplied into the system's own scaling.
+///
+/// Composing rather than replacing matters: someone who has already enlarged
+/// text in the OS settings did so for every app, and overwriting that value
+/// here would quietly undo an accessibility choice the moment they opened this
+/// one.
+class _PreferredTextScaler extends TextScaler {
+  const _PreferredTextScaler(this._system, this._factor);
+
+  final TextScaler _system;
+  final double _factor;
+
+  @override
+  double scale(double fontSize) => _system.scale(fontSize * _factor);
+
+  // Required by TextScaler, and derived from [scale] so this class never reads
+  // the deprecated linear factor off the system scaler — which on iOS is
+  // nonlinear anyway, and would be a lie at any size but one. 14 is Flutter's
+  // own reference font size for the conversion.
+  @override
+  double get textScaleFactor => scale(14) / 14;
 }

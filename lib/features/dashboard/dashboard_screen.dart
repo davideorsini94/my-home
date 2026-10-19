@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/design.dart';
 import '../../app/providers.dart';
-import '../../app/theme.dart';
 import '../../core/date_format_it.dart';
 import '../../core/local_date.dart';
 import '../../core/waste_catalogue.dart';
@@ -50,7 +50,7 @@ class DashboardScreen extends ConsumerWidget {
       ref.read(notificationSyncProvider).requestSync();
     });
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(
         title: Text(house.value?.name ?? 'Abitazione'),
         leading: IconButton(
@@ -89,7 +89,7 @@ class DashboardScreen extends ConsumerWidget {
         icon: const Icon(Icons.add),
         label: const Text('Raccolta extra'),
       ),
-      body: SafeArea(
+      body: (context) => SafeArea(
         top: false,
         child: AsyncView(
           value: configs,
@@ -188,7 +188,7 @@ class _DashboardBody extends ConsumerWidget {
         .toList();
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+      padding: glassListPadding(context, bottom: 104),
       children: [
         if (withoutSchedule.isNotEmpty) ...[
           Card(
@@ -334,7 +334,6 @@ class _PickupCardState extends ConsumerState<_PickupCard> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final pickup = widget.pickup;
-    final color = wasteColor(context, pickup.config.type);
     final isToday = pickup.date == widget.today;
 
     final settled = pickup.recorded;
@@ -342,22 +341,16 @@ class _PickupCardState extends ConsumerState<_PickupCard> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
         child: Column(
           children: [
             Row(
               children: [
-                Container(
-                  width: 4,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                WasteAvatar(type: pickup.config.type, size: 40),
-                const SizedBox(width: 12),
+                // The avatar alone carries the colour now. The stripe that used
+                // to sit beside it said the same thing a second time, which
+                // only read as decoration once the tiles became solid.
+                WasteAvatar(type: pickup.config.type, size: 44),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/design.dart';
 import '../../app/providers.dart';
 import '../../core/date_format_it.dart';
 import '../../core/local_date.dart';
@@ -189,7 +190,7 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
       }
     }
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(
         title: Text(
           _isEditing ? 'Modifica manutenzione' : 'Nuova manutenzione',
@@ -199,12 +200,12 @@ class _MaintenanceFormScreenState extends ConsumerState<MaintenanceFormScreen> {
           onPressed: () => context.go('/house/${widget.houseId}/maintenance'),
         ),
       ),
-      body: SafeArea(
+      body: (context) => SafeArea(
         top: false,
         child: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+            padding: glassListPadding(context, bottom: 32),
             children: [
               Row(
                 children: [

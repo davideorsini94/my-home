@@ -122,11 +122,7 @@ class _RecordExtraSheetState extends ConsumerState<_RecordExtraSheet> {
                 children: [
                   for (final config in enabled)
                     ChoiceChip(
-                      avatar: Icon(
-                        config.type.icon,
-                        size: 18,
-                        color: config.type.colorFor(theme.brightness),
-                      ),
+                      avatar: WasteAvatar(type: config.type, size: 22),
                       label: Text(config.type.label),
                       selected: _type == config.type,
                       onSelected: (_) => setState(() => _type = config.type),

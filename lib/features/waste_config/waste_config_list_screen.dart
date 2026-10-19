@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/design.dart';
 import '../../app/providers.dart';
 import '../../core/date_format_it.dart';
 import '../../core/waste_catalogue.dart';
@@ -20,7 +21,7 @@ class WasteConfigListScreen extends ConsumerWidget {
     final configs = ref.watch(wasteConfigsProvider(houseId));
     final theme = Theme.of(context);
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(
         title: const Text('Rifiuti monitorati'),
         leading: IconButton(
@@ -28,7 +29,7 @@ class WasteConfigListScreen extends ConsumerWidget {
           onPressed: () => context.go('/house/$houseId/waste'),
         ),
       ),
-      body: SafeArea(
+      body: (context) => SafeArea(
         top: false,
         child: AsyncView(
           value: configs,
@@ -37,7 +38,7 @@ class WasteConfigListScreen extends ConsumerWidget {
             final byType = {for (final c in list) c.type: c};
 
             return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              padding: glassListPadding(context),
               children: [
                 Text(
                   'Attiva solo i rifiuti che vuoi monitorare in questa '

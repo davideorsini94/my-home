@@ -5,6 +5,7 @@ import '../../app/providers.dart';
 import '../../core/waste_catalogue.dart';
 import '../../data/auth_repository.dart';
 import '../../widgets/async_view.dart';
+import '../../app/theme.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -117,10 +118,8 @@ class _BinCluster extends StatelessWidget {
             ),
             child: Icon(
               type.icon,
-              size: 22,
-              color: type.colorFor(brightness).computeLuminance() > 0.5
-                  ? Colors.black87
-                  : Colors.white,
+              size: 24,
+              color: onWasteColor(type.colorFor(brightness)),
             ),
           ),
       ],

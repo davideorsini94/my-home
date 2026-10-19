@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/design.dart';
 import '../../app/providers.dart';
 import '../../core/date_format_it.dart';
 import '../../core/local_date.dart';
@@ -120,7 +121,7 @@ class _WasteConfigEditScreenState extends ConsumerState<WasteConfigEditScreen> {
             count: 3,
           );
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(
         title: Text(widget.type.label),
         leading: IconButton(
@@ -128,10 +129,10 @@ class _WasteConfigEditScreenState extends ConsumerState<WasteConfigEditScreen> {
           onPressed: () => context.go('/house/${widget.houseId}/waste/config'),
         ),
       ),
-      body: SafeArea(
+      body: (context) => SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+          padding: glassListPadding(context, bottom: 104),
           children: [
             Row(
               children: [

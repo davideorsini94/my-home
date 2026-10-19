@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/design.dart';
 import '../../app/providers.dart';
+import '../../app/theme.dart';
 import '../../core/waste_catalogue.dart';
 import '../../domain/entities/collection_event.dart';
 import '../../domain/statistics.dart';
 import '../../widgets/async_view.dart';
+import '../../widgets/waste_badges.dart';
 
 const _monthInitials = [
   'G',
@@ -59,7 +62,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
       collectionsProvider((houseId: widget.houseId, year: _year)),
     );
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(
         title: const Text('Statistiche'),
         leading: IconButton(
@@ -67,10 +70,10 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
           onPressed: () => context.go('/house/${widget.houseId}/waste'),
         ),
       ),
-      body: SafeArea(
+      body: (context) => SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          padding: glassListPadding(context, bottom: 32),
           children: [
             _YearSelector(
               years: years,
@@ -94,9 +97,9 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 28),
-            _SectionTitle('Confronto tra gli anni'),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sectionGap),
+            const _SectionTitle('Confronto tra gli anni'),
+            const SizedBox(height: 12),
             _YearComparison(houseId: widget.houseId, years: years),
           ],
         ),
@@ -119,9 +122,13 @@ class _YearSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SingleChildScrollView(
     scrollDirection: Axis.horizontal,
+    // Newest first. Chronological order reads more naturally, but it put the
+    // year you are actually looking at — the current one — last, off the right
+    // edge of the screen and half cut off, so the screen opened on a selection
+    // you could not see.
     child: Row(
       children: [
-        for (final year in years.reversed) ...[
+        for (final year in years) ...[
           ChoiceChip(
             label: Text('$year'),
             selected: year == selected,
@@ -152,18 +159,18 @@ class _YearDetail extends StatelessWidget {
     if (breakdown.isEmpty) {
       return Card(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(28),
           child: Column(
             children: [
               Icon(
                 Icons.insights_outlined,
-                size: 36,
+                size: 40,
                 color: theme.colorScheme.outline,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               Text(
                 'Nessuna raccolta registrata nel ${breakdown.year}',
-                style: theme.textTheme.bodyMedium,
+                style: theme.textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
             ],
@@ -175,71 +182,118 @@ class _YearDetail extends StatelessWidget {
     final types = breakdown.typesPresent;
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.cardPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '${breakdown.total}',
-                      style: theme.textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // Flexible because a large system font size grows both the
-                    // headline figure and the wording beside it, and together
-                    // they outgrow the card.
-                    Flexible(
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(
-                          breakdown.total == 1
-                              ? 'raccolta nel ${breakdown.year}'
-                              : 'raccolte nel ${breakdown.year}',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Text('Andamento mensile', style: theme.textTheme.labelLarge),
-                const SizedBox(height: 12),
+                _TotalHeadline(breakdown: breakdown),
+                const SizedBox(height: 22),
+                Text('Andamento mensile', style: theme.textTheme.titleSmall),
+                const SizedBox(height: 14),
                 _MonthlyChart(
                   breakdown: breakdown,
                   types: types,
                   selectedMonth: selectedMonth,
                   onMonthTap: onMonthTap,
                 ),
+                const SizedBox(height: 14),
+                _Legend(types: types),
                 if (selectedMonth != null) ...[
                   const SizedBox(height: 16),
                   _MonthDetail(breakdown: breakdown, month: selectedMonth!),
                 ],
-                const SizedBox(height: 20),
-                const Divider(),
-                const SizedBox(height: 12),
-                Text('Totale per tipo', style: theme.textTheme.labelLarge),
-                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.rowGap),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.cardPadding),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Totale per tipo', style: theme.textTheme.titleSmall),
+                const SizedBox(height: 16),
                 for (final type in types) ...[
                   _TypeRow(
                     type: type,
                     count: breakdown.totalForType(type),
                     total: breakdown.total,
                   ),
-                  const SizedBox(height: 10),
+                  if (type != types.last) const SizedBox(height: 16),
                 ],
               ],
             ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The year's total, with the monthly average underneath it.
+class _TotalHeadline extends StatelessWidget {
+  const _TotalHeadline({required this.breakdown});
+
+  final MonthlyBreakdown breakdown;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final average = breakdown.total / 12;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${breakdown.total}',
+                style: theme.textTheme.displaySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                  height: 1.1,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                breakdown.total == 1
+                    ? 'raccolta nel ${breakdown.year}'
+                    : 'raccolte nel ${breakdown.year}',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        // Pushed into its own block so a long system font size wraps the words
+        // instead of colliding with the headline figure beside it.
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                average.toStringAsFixed(1).replaceAll('.', ','),
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                'al mese',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -261,7 +315,7 @@ class _MonthlyChart extends StatelessWidget {
   final int? selectedMonth;
   final ValueChanged<int> onMonthTap;
 
-  static const _chartHeight = 130.0;
+  static const _chartHeight = 150.0;
 
   @override
   Widget build(BuildContext context) {
@@ -270,28 +324,25 @@ class _MonthlyChart extends StatelessWidget {
 
     return Column(
       children: [
-        SizedBox(
-          height: _chartHeight + 26,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              for (var month = 0; month < 12; month++)
-                Expanded(
-                  child: _MonthColumn(
-                    month: month,
-                    counts: breakdown.byMonth[month],
-                    total: breakdown.totalForMonth(month),
-                    peak: peak,
-                    types: types,
-                    isSelected: selectedMonth == month,
-                    chartHeight: _chartHeight,
-                    onTap: () => onMonthTap(month),
-                  ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            for (var month = 0; month < 12; month++)
+              Expanded(
+                child: _MonthColumn(
+                  month: month,
+                  counts: breakdown.byMonth[month],
+                  total: breakdown.totalForMonth(month),
+                  peak: peak,
+                  types: types,
+                  isSelected: selectedMonth == month,
+                  chartHeight: _chartHeight,
+                  onTap: () => onMonthTap(month),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         Text(
           'Tocca un mese per il dettaglio',
           style: theme.textTheme.bodySmall?.copyWith(
@@ -327,73 +378,137 @@ class _MonthColumn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // A bar for a month with collections is never shorter than 4px, so a
-    // single collection stays visible next to a busy month.
+    // A month with collections is never shorter than 6px, so a single
+    // collection stays visible next to a busy month.
     final barHeight = total == 0
-        ? 3.0
-        : (total / peak * chartHeight).clamp(4.0, chartHeight);
+        ? 4.0
+        : (total / peak * chartHeight).clamp(6.0, chartHeight);
+    const radius = BorderRadius.vertical(
+      top: Radius.circular(5),
+      bottom: Radius.circular(2),
+    );
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 1.5),
+      borderRadius: BorderRadius.circular(AppRadius.chip),
+      child: Container(
+        decoration: BoxDecoration(
+          // The selected month is lifted by a tint behind the whole column
+          // rather than by recolouring the bar, which would fight the stack's
+          // own colours and hide which types made it up.
+          color: isSelected
+              ? theme.colorScheme.primary.withValues(alpha: 0.10)
+              : null,
+          borderRadius: BorderRadius.circular(AppRadius.chip),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            if (total > 0)
-              Text(
-                '$total',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  fontSize: 9,
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              )
-            else
-              const SizedBox(height: 12),
-            const SizedBox(height: 2),
-            Container(
-              height: barHeight,
-              decoration: BoxDecoration(
-                color: total == 0
-                    ? theme.colorScheme.surfaceContainerHighest
-                    : null,
-                borderRadius: BorderRadius.circular(3),
-              ),
+            SizedBox(
+              height: 16,
               child: total == 0
                   ? null
-                  : ClipRRect(
-                      borderRadius: BorderRadius.circular(3),
-                      child: Column(
-                        children: [
-                          for (final type in types)
-                            if ((counts[type] ?? 0) > 0)
-                              Expanded(
-                                flex: counts[type]!,
-                                child: Container(
-                                  width: double.infinity,
-                                  color: type.colorFor(theme.brightness),
-                                ),
-                              ),
-                        ],
+                  : FittedBox(
+                      child: Text(
+                        '$total',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: isSelected
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
             ),
             const SizedBox(height: 4),
-            Text(
-              _monthInitials[month],
-              style: theme.textTheme.labelSmall?.copyWith(
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.onSurfaceVariant,
+            SizedBox(
+              height: chartHeight,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    height: barHeight,
+                    decoration: BoxDecoration(
+                      color: total == 0
+                          ? theme.colorScheme.surfaceContainerHighest
+                          : null,
+                      borderRadius: radius,
+                    ),
+                    child: total == 0
+                        ? null
+                        : ClipRRect(
+                            borderRadius: radius,
+                            child: Column(
+                              children: [
+                                for (final type in types)
+                                  if ((counts[type] ?? 0) > 0)
+                                    Expanded(
+                                      flex: counts[type]!,
+                                      child: Container(
+                                        width: double.infinity,
+                                        color: type.colorFor(theme.brightness),
+                                      ),
+                                    ),
+                              ],
+                            ),
+                          ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 6),
+            FittedBox(
+              child: Text(
+                _monthInitials[month],
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Which colour in the stack is which type.
+///
+/// The chart is the one place in the app where a waste type appears as a bare
+/// band of colour with no icon next to it, so the key has to be spelled out
+/// somewhere — and it uses the same tiles as everywhere else.
+class _Legend extends StatelessWidget {
+  const _Legend({required this.types});
+
+  final List<WasteType> types;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Wrap(
+      spacing: 14,
+      runSpacing: 8,
+      children: [
+        for (final type in types)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              WasteAvatar(type: type, size: 20),
+              const SizedBox(width: 6),
+              Text(
+                type.label,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+      ],
     );
   }
 }
@@ -409,45 +524,45 @@ class _MonthDetail extends StatelessWidget {
     final theme = Theme.of(context);
     final counts = breakdown.byMonth[month];
     final total = breakdown.totalForMonth(month);
+    const padding = 14.0;
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(padding),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(
+          AppRadius.concentric(AppRadius.card, AppSpacing.cardPadding),
+        ),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             '${_monthNames[month]} ${breakdown.year}',
-            style: theme.textTheme.labelLarge?.copyWith(
+            style: theme.textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           if (total == 0)
-            Text('Nessuna raccolta.', style: theme.textTheme.bodySmall)
+            Text('Nessuna raccolta.', style: theme.textTheme.bodyMedium)
           else
             Wrap(
-              spacing: 12,
-              runSpacing: 6,
+              spacing: 14,
+              runSpacing: 8,
               children: [
                 for (final type in WasteType.values)
                   if ((counts[type] ?? 0) > 0)
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          type.icon,
-                          size: 16,
-                          color: type.colorFor(theme.brightness),
-                        ),
-                        const SizedBox(width: 4),
+                        WasteAvatar(type: type, size: 22),
+                        const SizedBox(width: 6),
                         Text(
                           '${type.label}: ${counts[type]}',
-                          style: theme.textTheme.bodySmall,
+                          style: theme.textTheme.bodyMedium,
                         ),
                       ],
                     ),
@@ -473,7 +588,7 @@ class _TypeRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = type.colorFor(theme.brightness);
+    final color = wasteColor(context, type);
     final share = total == 0 ? 0.0 : count / total;
 
     return Column(
@@ -481,23 +596,31 @@ class _TypeRow extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(type.icon, size: 16, color: color),
-            const SizedBox(width: 8),
-            Expanded(child: Text(type.label, style: theme.textTheme.bodySmall)),
+            WasteAvatar(type: type, size: 28),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                type.label,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
             Text(
               '$count · ${(share * 100).round()}%',
-              style: theme.textTheme.labelSmall?.copyWith(
+              style: theme.textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         ClipRRect(
-          borderRadius: BorderRadius.circular(3),
+          borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: share,
-            minHeight: 5,
+            minHeight: 7,
             backgroundColor: theme.colorScheme.surfaceContainerHighest,
             valueColor: AlwaysStoppedAnimation(color),
           ),
@@ -532,14 +655,14 @@ class _YearComparison extends ConsumerWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.cardPadding),
         child: Column(
           children: [
             for (final entry in totals) ...[
               _YearBar(total: entry, peak: peak),
-              if (entry != totals.last) const SizedBox(height: 14),
+              if (entry != totals.last) const SizedBox(height: 16),
             ],
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             Text(
               'Ultimi ${years.length} anni',
               style: theme.textTheme.bodySmall?.copyWith(
@@ -578,6 +701,9 @@ class _YearBar extends StatelessWidget {
   final YearTotal total;
   final int peak;
 
+  static const _barHeight = 26.0;
+  static final _radius = BorderRadius.circular(7);
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -585,10 +711,10 @@ class _YearBar extends StatelessWidget {
     return Row(
       children: [
         SizedBox(
-          width: 42,
+          width: 48,
           child: Text(
             '${total.year}',
-            style: theme.textTheme.labelMedium?.copyWith(
+            style: theme.textTheme.labelLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -598,58 +724,62 @@ class _YearBar extends StatelessWidget {
             builder: (context, constraints) {
               if (!total.isLoaded) {
                 return Container(
-                  height: 22,
+                  height: _barHeight,
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(5),
+                    borderRadius: _radius,
                   ),
                 );
               }
               final width = total.total == 0
                   ? 0.0
                   : (total.total / peak * constraints.maxWidth).clamp(
-                      6.0,
+                      8.0,
                       constraints.maxWidth,
                     );
-              return Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  height: 22,
-                  width: width,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5),
-                    color: total.total == 0
-                        ? theme.colorScheme.surfaceContainerHighest
-                        : null,
+              return Stack(
+                children: [
+                  // The track makes an empty or short year legible as a share
+                  // of the best one, instead of a stub floating in white space.
+                  Container(
+                    height: _barHeight,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerHighest
+                          .withValues(alpha: 0.5),
+                      borderRadius: _radius,
+                    ),
                   ),
-                  child: total.total == 0
-                      ? null
-                      : ClipRRect(
-                          borderRadius: BorderRadius.circular(5),
-                          child: Row(
-                            children: [
-                              for (final type in WasteType.values)
-                                if ((total.byType[type] ?? 0) > 0)
-                                  Expanded(
-                                    flex: total.byType[type]!,
-                                    child: Container(
-                                      color: type.colorFor(theme.brightness),
-                                    ),
+                  if (total.total > 0)
+                    ClipRRect(
+                      borderRadius: _radius,
+                      child: SizedBox(
+                        height: _barHeight,
+                        width: width,
+                        child: Row(
+                          children: [
+                            for (final type in WasteType.values)
+                              if ((total.byType[type] ?? 0) > 0)
+                                Expanded(
+                                  flex: total.byType[type]!,
+                                  child: Container(
+                                    color: type.colorFor(theme.brightness),
                                   ),
-                            ],
-                          ),
+                                ),
+                          ],
                         ),
-                ),
+                      ),
+                    ),
+                ],
               );
             },
           ),
         ),
         SizedBox(
-          width: 38,
+          width: 44,
           child: Text(
             total.isLoaded ? '${total.total}' : '–',
             textAlign: TextAlign.end,
-            style: theme.textTheme.labelMedium?.copyWith(
+            style: theme.textTheme.labelLarge?.copyWith(
               fontWeight: FontWeight.bold,
               color: theme.colorScheme.onSurfaceVariant,
             ),

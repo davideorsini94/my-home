@@ -9,6 +9,7 @@ import '../../domain/entities/collection_event.dart';
 import '../../widgets/app_sheet.dart';
 import '../../widgets/button_label.dart';
 import '../../widgets/async_view.dart';
+import '../../widgets/waste_badges.dart';
 
 Future<void> showEditEventSheet(
   BuildContext context,
@@ -201,11 +202,7 @@ class _EditEventSheetState extends ConsumerState<_EditEventSheet> {
               children: [
                 for (final type in types)
                   ChoiceChip(
-                    avatar: Icon(
-                      type.icon,
-                      size: 18,
-                      color: type.colorFor(theme.brightness),
-                    ),
+                    avatar: WasteAvatar(type: type, size: 22),
                     label: Text(type.label),
                     selected: _type == type,
                     onSelected: (_) => setState(() => _type = type),

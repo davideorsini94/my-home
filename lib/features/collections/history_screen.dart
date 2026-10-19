@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/design.dart';
 import '../../app/providers.dart';
 import '../../core/date_format_it.dart';
 import '../../core/waste_catalogue.dart';
@@ -35,7 +36,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         ref.watch(wasteConfigsProvider(widget.houseId)).value ?? const [];
     final currentYear = DateTime.now().year;
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(
         title: const Text('Storico raccolte'),
         leading: IconButton(
@@ -63,7 +64,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           ),
         ],
       ),
-      body: SafeArea(
+      body: (context) => SafeArea(
         top: false,
         child: AsyncView(
           value: events,
@@ -96,7 +97,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             }
 
             return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              padding: glassListPadding(context),
               children: [
                 if (statuses.isNotEmpty) ...[
                   Card(
@@ -264,7 +265,7 @@ class _Tag extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
     decoration: BoxDecoration(
       color: background,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppRadius.chip),
     ),
     child: Text(
       label,

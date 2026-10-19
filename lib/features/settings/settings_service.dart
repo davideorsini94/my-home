@@ -1,11 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// How large text and numbers are drawn.
+///
+/// A multiplier on top of whatever the system is already asking for, never a
+/// replacement for it: someone who has turned the iOS or Android font size up
+/// keeps that, and this preference moves it further. The large step is modest
+/// for the same reason — it compounds with a system setting that may already
+/// be at 1.5, and the layouts have to survive the product.
+enum AppTextSize {
+  small('Piccolo', 0.88),
+  medium('Medio', 1),
+  large('Grande', 1.18);
+
+  const AppTextSize(this.label, this.scale);
+
+  final String label;
+  final double scale;
+
+  static AppTextSize fromName(String? name) => values.firstWhere(
+    (size) => size.name == name,
+    orElse: () => AppTextSize.medium,
+  );
+}
+
 /// Device-local preferences.
 ///
 /// The reminder hour is deliberately per device rather than per house: within
 /// one family, one person may want the reminder at 19:00 and another at 21:00,
-/// and neither should impose it on the other.
+/// and neither should impose it on the other. The text size is per device for
+/// the same reason: it is about this pair of eyes and this screen.
 class AppSettings {
   const AppSettings({
     this.notificationHour = 20,
@@ -14,6 +38,7 @@ class AppSettings {
     this.maintenanceRemindersEnabled = true,
     this.exactAlarms = false,
     this.themeMode = ThemeMode.system,
+    this.textSize = AppTextSize.medium,
   });
 
   final int notificationHour;
@@ -24,6 +49,7 @@ class AppSettings {
   final bool maintenanceRemindersEnabled;
   final bool exactAlarms;
   final ThemeMode themeMode;
+  final AppTextSize textSize;
 
   TimeOfDay get notificationTime =>
       TimeOfDay(hour: notificationHour, minute: notificationMinute);
@@ -35,6 +61,7 @@ class AppSettings {
     bool? maintenanceRemindersEnabled,
     bool? exactAlarms,
     ThemeMode? themeMode,
+    AppTextSize? textSize,
   }) => AppSettings(
     notificationHour: notificationHour ?? this.notificationHour,
     notificationMinute: notificationMinute ?? this.notificationMinute,
@@ -43,6 +70,7 @@ class AppSettings {
         maintenanceRemindersEnabled ?? this.maintenanceRemindersEnabled,
     exactAlarms: exactAlarms ?? this.exactAlarms,
     themeMode: themeMode ?? this.themeMode,
+    textSize: textSize ?? this.textSize,
   );
 }
 
@@ -55,6 +83,7 @@ class SettingsService {
   static const _maintenanceKey = 'maintenance_reminders_enabled';
   static const _exactKey = 'exact_alarms';
   static const _themeKey = 'theme_mode';
+  static const _textSizeKey = 'text_size';
 
   Future<AppSettings> load() async {
     final prefs = await SharedPreferences.getInstance();
@@ -65,6 +94,7 @@ class SettingsService {
       maintenanceRemindersEnabled: prefs.getBool(_maintenanceKey) ?? true,
       exactAlarms: prefs.getBool(_exactKey) ?? false,
       themeMode: _themeFromName(prefs.getString(_themeKey)),
+      textSize: AppTextSize.fromName(prefs.getString(_textSizeKey)),
     );
   }
 
@@ -76,6 +106,7 @@ class SettingsService {
     await prefs.setBool(_maintenanceKey, settings.maintenanceRemindersEnabled);
     await prefs.setBool(_exactKey, settings.exactAlarms);
     await prefs.setString(_themeKey, settings.themeMode.name);
+    await prefs.setString(_textSizeKey, settings.textSize.name);
   }
 
   ThemeMode _themeFromName(String? name) => switch (name) {

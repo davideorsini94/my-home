@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../app/design.dart';
 import '../../app/providers.dart';
 import '../../domain/entities/house.dart';
 import '../../widgets/async_view.dart';
@@ -164,7 +165,7 @@ class _MembersScreenState extends ConsumerState<MembersScreen> {
     final house = ref.watch(houseProvider(widget.houseId));
     final uid = ref.watch(currentUserProvider)?.uid;
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(
         title: const Text('Membri e condivisione'),
         leading: IconButton(
@@ -172,7 +173,7 @@ class _MembersScreenState extends ConsumerState<MembersScreen> {
           onPressed: () => context.go('/house/${widget.houseId}'),
         ),
       ),
-      body: SafeArea(
+      body: (context) => SafeArea(
         top: false,
         child: AsyncView(
           value: house,
@@ -190,7 +191,7 @@ class _MembersScreenState extends ConsumerState<MembersScreen> {
             final code = house.activeInviteCode;
 
             return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              padding: glassListPadding(context),
               children: [
                 Text(
                   'Chi condivide questa abitazione vede gli stessi ritiri e '

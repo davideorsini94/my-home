@@ -50,11 +50,13 @@ class MaintenanceAvatar extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(size / 3),
+        // The same ratio as WasteAvatar: the two sit in the same lists and a
+        // different corner on each reads as a mistake rather than a category.
+        borderRadius: BorderRadius.circular(size / 2.8),
       ),
       child: Icon(
         maintenanceIconFor(iconKey).icon,
-        size: size * 0.55,
+        size: size * 0.62,
         color: foreground,
       ),
     );

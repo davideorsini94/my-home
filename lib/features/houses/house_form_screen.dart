@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/design.dart';
 import '../../app/providers.dart';
 import '../../widgets/async_view.dart';
 
@@ -69,7 +70,7 @@ class _HouseFormScreenState extends ConsumerState<HouseFormScreen> {
       }
     }
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Modifica abitazione' : 'Nuova abitazione'),
         leading: IconButton(
@@ -79,12 +80,12 @@ class _HouseFormScreenState extends ConsumerState<HouseFormScreen> {
               : context.go('/'),
         ),
       ),
-      body: SafeArea(
+      body: (context) => SafeArea(
         top: false,
         child: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: glassListPadding(context, bottom: 16),
             children: [
               TextFormField(
                 controller: _controller,

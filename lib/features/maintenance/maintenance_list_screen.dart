@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/design.dart';
 import '../../app/providers.dart';
 import '../../core/date_format_it.dart';
 import '../../core/local_date.dart';
@@ -26,7 +27,7 @@ class MaintenanceListScreen extends ConsumerWidget {
     final log = ref.watch(maintenanceLogProvider(houseId));
     final today = LocalDate.today();
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(
         title: const Text('Manutenzioni'),
         leading: IconButton(
@@ -39,7 +40,7 @@ class MaintenanceListScreen extends ConsumerWidget {
         icon: const Icon(Icons.add),
         label: const Text('Nuova manutenzione'),
       ),
-      body: SafeArea(
+      body: (context) => SafeArea(
         top: false,
         child: AsyncView(
           value: maintenances,
@@ -69,7 +70,7 @@ class MaintenanceListScreen extends ConsumerWidget {
             ]..sort((a, b) => compareForList(a, b, today));
 
             return ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+              padding: glassListPadding(context, bottom: 104),
               itemCount: statuses.length,
               separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) => _MaintenanceCard(
@@ -374,7 +375,7 @@ class _Warning extends StatelessWidget {
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: theme.colorScheme.tertiaryContainer,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppRadius.chip),
       ),
       child: Row(
         children: [

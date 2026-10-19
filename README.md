@@ -273,6 +273,37 @@ della scadenza — il caso normale, visto che è quando arriva il promemoria —
 sovrascrivere un'esecuzione, cancellandone il costo e riportando indietro di un
 intero periodo la data dell'ultima manutenzione.
 
+**Il vetro sta sopra il contenuto, non dentro.** L'interfaccia segue le linee
+guida Liquid Glass di Apple, che sono esplicite su un punto facile da sbagliare:
+il vetro appartiene allo strato funzionale — barre, sheet, controlli che
+galleggiano — e non va messo nello strato del contenuto, dove «can result in
+unnecessary complexity and a confusing visual hierarchy». Quindi le card e le
+liste restano superfici normali e il contenuto scorre *sotto* le barre, che lo
+sfocano e ne abbassano la luminosità quanto basta a restare leggibili. Flutter
+disegna per conto suo e non può chiamare `glassEffect` di SwiftUI: il materiale
+è ricostruito in `lib/app/design.dart` con sfocatura di sfondo, tinta e bordo di
+luce, e si spegne in superficie opaca quando il sistema chiede più contrasto.
+
+**Il corpo di `GlassScaffold` è un builder, non un widget.** La barra galleggia
+sopra il contenuto, quindi il corpo deve lasciarle spazio in cima; quello spazio
+esiste solo *sotto* `GlassScaffold`, e una schermata che costruisse il corpo con
+il proprio `context` leggerebbe il margine vecchio e infilerebbe la prima riga
+sotto il titolo. È successo davvero, ed è invisibile nei test finché non guardi
+un telefono. Passando il contesto dall'interno l'errore non è più scrivibile, e
+`test/glass_scaffold_test.dart` lo tiene fermo.
+
+**Un tipo di rifiuto ha una sola faccia.** Tessera piena del suo colore con
+l'icona in negativo, identica ovunque: riepilogo della casa, lista dei bidoni,
+legenda delle statistiche, chip delle sheet. Prima il riepilogo usava l'icona
+colorata su fondo al 14% e la lista una tessera piena, e le due schermate
+sembravano avere due palette diverse per gli stessi bidoni.
+
+**La dimensione del testo si somma a quella di sistema.** La preferenza in
+*Impostazioni* è un moltiplicatore su `MediaQuery.textScaler`, non un valore che
+lo sostituisce: chi ha già ingrandito il testo in iOS o Android se lo tiene, e
+questa lo sposta ancora. Sostituirlo significherebbe annullare una scelta di
+accessibilità fatta per tutte le app nel momento in cui si apre questa.
+
 **I promemoria sono notifiche locali, non push.** Funzionano offline e non
 richiedono un server. Il testo però viene fissato quando la notifica è
 programmata, quindi se tuo padre registra una raccolta dal suo telefono il

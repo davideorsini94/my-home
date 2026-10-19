@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/design.dart';
 import '../../app/providers.dart';
 import '../../data/invite_repository.dart';
 import '../../domain/entities/invite.dart';
@@ -88,7 +89,7 @@ class _JoinHouseScreenState extends ConsumerState<JoinHouseScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(
         title: const Text('Unisciti a un\'abitazione'),
         leading: IconButton(
@@ -96,10 +97,10 @@ class _JoinHouseScreenState extends ConsumerState<JoinHouseScreen> {
           onPressed: () => context.go('/'),
         ),
       ),
-      body: SafeArea(
+      body: (context) => SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: glassListPadding(context, bottom: 16),
           children: [
             Text(
               'Inserisci il codice di invito che ti hanno condiviso. '
